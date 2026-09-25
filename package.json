@@ -30,6 +30,10 @@
     "./providers/x": {
       "types": "./dist/providers/x/index.d.ts",
       "default": "./dist/providers/x/index.js"
+    },
+    "./providers/linkedin": {
+      "types": "./dist/providers/linkedin/index.d.ts",
+      "default": "./dist/providers/linkedin/index.js"
     }
   },
   "publishConfig": {
