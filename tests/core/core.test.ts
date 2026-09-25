@@ -83,16 +83,11 @@ describe('release-note contract', () => {
       'unsupported_reserved_marker',
     );
 
-    expectCode(
-      () => parseReleaseNotes(BASE_BODY + '\n<!-- social:short\nDuplicate.\n-->\n'),
-      'duplicate_social_block',
-    );
+    expectCode(() => parseReleaseNotes(BASE_BODY + '\n<!-- social:short\nDuplicate.\n-->\n'), 'duplicate_social_block');
 
     expectCode(
       () =>
-        parseReleaseNotes(
-          BASE_BODY.replace('No breaking changes.', '<!-- social:x\nNested <!-- social:skip -->\n-->'),
-        ),
+        parseReleaseNotes(BASE_BODY.replace('No breaking changes.', '<!-- social:x\nNested <!-- social:skip -->\n-->')),
       'malformed_comment',
     );
 
