@@ -30,4 +30,5 @@ jobs:
           npm test -- --run tests/core
           npm test -- --run tests/providers/x.test.ts
           npm test -- --run tests/providers/linkedin.test.ts
+          npm test -- --run tests/publishing tests/github/state-store.test.ts
           npm pack --dry-run
