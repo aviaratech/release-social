@@ -569,6 +569,24 @@ describe('GitHubStateStore', () => {
     await state4.initialize();
     api4.deleteStateBranch();
     await expect(state4.read()).rejects.toMatchObject({ code: 'state_branch_missing' });
+
+    const api5 = new FakeGitHubGitApi();
+    const state5 = store(api5);
+    await state5.initialize();
+    const invalidTransition = sealLedger({
+      ...createEmptyLedger(),
+      transitions: [
+        {
+          id: '42000000-0000-4000-8000-000000000001',
+          kind: 'append_pending',
+          at: fixedClock().now(),
+          recordKey: 'f'.repeat(64),
+          attemptId: '42000000-0000-4000-8000-000000000002',
+        },
+      ],
+    });
+    api5.rewriteStateText(canonicalJson(invalidTransition));
+    await expect(state5.read()).rejects.toMatchObject({ code: 'state_corrupt' });
   });
 
   it('never stores the GitHub token or provider secrets in state data or diagnostics', async () => {
