@@ -10221,10 +10221,14 @@ function bounded(value) {
   if (json.length <= MAX_OUTPUT) return json;
   return JSON.stringify({ error: "output_truncated", preview: json.slice(0, MAX_OUTPUT) });
 }
+function outputValue(value) {
+  if (typeof value === "string") return value.replace(/[\r\n]+/g, " ").slice(0, MAX_OUTPUT);
+  return bounded(value);
+}
 async function setOutput(name, value) {
   const outputPath = process.env.GITHUB_OUTPUT;
   if (!outputPath) return;
-  await (0, import_promises.appendFile)(outputPath, `${name}=${bounded(value)}
+  await (0, import_promises.appendFile)(outputPath, `${name}=${outputValue(value)}
 `, "utf8");
 }
 function previewValue(prepared) {
