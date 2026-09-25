@@ -4,6 +4,13 @@ export type Destination = (typeof DESTINATIONS)[number];
 export const TEXT_VARIANTS = ['short', 'announcement'] as const;
 export type TextVariant = (typeof TEXT_VARIANTS)[number];
 
+export const MISSING_AUTHORED_MODES = ['github-release-notes', 'error', 'skip'] as const;
+export type MissingAuthoredMode = (typeof MISSING_AUTHORED_MODES)[number];
+
+export interface ReleaseContentConfig {
+  missingAuthored?: MissingAuthoredMode;
+}
+
 export interface XDestinationConfig {
   accountId: string;
   text?: TextVariant;
@@ -17,6 +24,7 @@ export interface LinkedInDestinationConfig {
 
 export interface ReleaseSocialConfig {
   version: 1;
+  content?: ReleaseContentConfig;
   destinations: {
     x?: XDestinationConfig;
     linkedin?: LinkedInDestinationConfig;
@@ -67,10 +75,21 @@ export interface LinkedInAccountIdentity {
 
 export type ProviderAccountIdentity = XAccountIdentity | LinkedInAccountIdentity;
 
+export type FallbackOmissionReason = 'none' | 'empty_body' | 'no_useful_content' | 'budget';
+
+export interface GitHubReleaseNotesTextSource {
+  kind: 'github_release_notes';
+  contentDigest: string;
+  includedEntries: number;
+  omittedEntries: number;
+  omissionReason: FallbackOmissionReason;
+}
+
 export type TextSource =
   | { kind: 'provider_override' }
   | { kind: 'configured_variant'; variant: TextVariant }
-  | { kind: 'provider_default'; variant: TextVariant };
+  | { kind: 'provider_default'; variant: TextVariant }
+  | GitHubReleaseNotesTextSource;
 
 export interface RenderedDestinationPlan {
   version: 1;
@@ -82,7 +101,12 @@ export interface RenderedDestinationPlan {
   digest: string;
 }
 
-export type SkipReason = 'draft_release' | 'prerelease_release' | 'source_not_public' | 'announcement_opt_out';
+export type SkipReason =
+  | 'draft_release'
+  | 'prerelease_release'
+  | 'source_not_public'
+  | 'announcement_opt_out'
+  | 'authored_content_missing';
 
 export interface ReleasePlanReady {
   status: 'ready';
