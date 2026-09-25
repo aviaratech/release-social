@@ -1,24 +1,43 @@
 # release-social
 
-Publish release announcements to selected social destinations from standardized
-GitHub release notes.
+Publish release announcements to selected social destinations from standardized GitHub release notes.
 
 ## Status
 
-This repository is in the planning stage. The package and GitHub Action are not
-implemented or published yet.
+The shared TypeScript core implements the versioned release-note/configuration contracts, source eligibility, deterministic rendering, plan validation, and provider interfaces. Provider HTTP implementations, durable state, CLI behavior, and GitHub Action execution are tracked separately in the v0.1 milestone and are not implemented by the core package yet.
 
-## Initial scope
+## Core behavior
 
-- X and personal LinkedIn profiles, selected explicitly by each consumer.
-- Release notes that combine concise announcement prose with technical highlights
-  and upgrade notes.
-- Exact-post previews and deterministic publishing without an LLM at publish time.
-- Consumer-owned credentials and durable per-destination publishing outcomes.
-- A shared TypeScript package, CLI, and GitHub Action.
+- Parses release notes beginning with `<!-- release-social:v1 -->`.
+- Requires one visible announcement paragraph plus visible `## Highlights` and `## Upgrade notes` sections.
+- Requires hidden `social:short` prose and supports optional `social:x`, `social:linkedin`, and `social:skip` markers.
+- Validates version-1 destination configuration for X and personal LinkedIn profiles without accepting secrets.
+- Accepts only canonical GitHub release source metadata and binds the final link to that source.
+- Produces deterministic per-destination plans and SHA-256 digests from canonical nonsecret plan inputs and exact final payload bytes.
+- Returns typed skips for draft, prerelease, non-public, and explicitly opted-out releases.
 
-Implementation work is tracked in [issue #1](https://github.com/aviaratech/release-social/issues/1)
-and the [v0.1 milestone](https://github.com/aviaratech/release-social/milestone/1).
+Rendering precedence is provider-specific release-note override, then an explicitly configured text variant, then the provider default. X defaults to `short`; LinkedIn defaults to `announcement`. Selected prose is line-ending normalized, boundary-trimmed without collapsing internal whitespace, and followed by exactly one canonical GitHub release URL.
+
+## Templates
+
+- [`templates/release-notes.md`](templates/release-notes.md) is the release-note starting point.
+- [`templates/release-social.config.json`](templates/release-social.config.json) is a synthetic configuration example.
+
+The templates use fictional account identities and contain no credentials.
+
+## Development
+
+Use Node.js 24.21.0 and npm 11.19.0.
+
+```sh
+npm ci
+npm run checks
+npm run build
+npm test -- --run tests/core
+npm pack --dry-run
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for repository boundaries and verification requirements.
 
 ## License
 
