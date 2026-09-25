@@ -4,7 +4,7 @@ Publish release announcements to selected social destinations from standardized 
 
 ## Status
 
-The shared TypeScript core implements the versioned release-note/configuration contracts, source eligibility, deterministic rendering, plan validation, and provider interfaces. Provider HTTP implementations, durable state, CLI behavior, and GitHub Action execution are tracked separately in the v0.1 milestone and are not implemented by the core package yet.
+The shared TypeScript core implements the versioned release-note/configuration contracts, source eligibility, deterministic rendering, plan validation, and provider interfaces. The X provider is implemented for consumer-owned OAuth 1.0a text-and-link publishing. LinkedIn, durable state, CLI behavior, and GitHub Action execution remain tracked separately in the v0.1 milestone.
 
 ## Core behavior
 
@@ -23,7 +23,7 @@ Rendering precedence is provider-specific release-note override, then an explici
 - [`templates/release-notes.md`](templates/release-notes.md) is the release-note starting point.
 - [`templates/release-social.config.json`](templates/release-social.config.json) is a synthetic configuration example.
 
-The templates use fictional account identities and contain no credentials.
+The templates use fictional account identities and contain no credentials. X consumer setup is documented in [`docs/providers/x.md`](docs/providers/x.md).
 
 ## Development
 
