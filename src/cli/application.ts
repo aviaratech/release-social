@@ -12,7 +12,9 @@ import {
   reconcileNonCreationAttempt,
   reconcilePublishedAttempt,
   reviseRejectedAttemptPlan,
+  type BoundProvider,
   type PublicExecutionIdentity,
+  type PublishingStateRepository,
 } from '../publishing/index.js';
 import { createLinkedInProvider, loadLinkedInCredentials } from '../providers/linkedin/index.js';
 import { createXProvider, loadXCredentials } from '../providers/x/index.js';
@@ -44,6 +46,8 @@ export interface PublishApplicationOptions {
   execution: PublicExecutionIdentity;
   env?: NodeJS.ProcessEnv;
   fetch?: typeof fetch;
+  state?: PublishingStateRepository;
+  bindings?: readonly BoundProvider[];
 }
 
 export interface EntryResult {
@@ -118,24 +122,28 @@ export async function publishPrepared(options: PublishApplicationOptions): Promi
   }
 
   const env = options.env ?? process.env;
-  const bindings = prepared.plans.map((plan) => {
-    if (plan.destination === 'x') {
+  const bindings =
+    options.bindings ??
+    prepared.plans.map((plan) => {
+      if (plan.destination === 'x') {
+        return bindProvider({
+          provider: createXProvider(options.fetch === undefined ? {} : { fetch: options.fetch }),
+          credentials: loadXCredentials(env),
+        });
+      }
       return bindProvider({
-        provider: createXProvider({ fetch: options.fetch }),
-        credentials: loadXCredentials(env),
+        provider: createLinkedInProvider(options.fetch === undefined ? {} : { fetch: options.fetch }),
+        credentials: loadLinkedInCredentials(env),
       });
-    }
-    return bindProvider({
-      provider: createLinkedInProvider({ fetch: options.fetch }),
-      credentials: loadLinkedInCredentials(env),
     });
-  });
 
-  const state = new GitHubStateStore({
-    repository: options.repository,
-    token: options.githubToken,
-    fetch: options.fetch,
-  });
+  const state =
+    options.state ??
+    new GitHubStateStore({
+      repository: options.repository,
+      token: options.githubToken,
+      ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+    });
   const publications = (
     await publishRelease({
       plans: prepared.plans,
@@ -158,7 +166,7 @@ export async function initializePublishingState(
   githubToken: string,
   fetcher?: typeof fetch,
 ): Promise<void> {
-  await new GitHubStateStore({ repository, token: githubToken, fetch: fetcher }).initialize();
+  await new GitHubStateStore({ repository, token: githubToken, ...(fetcher === undefined ? {} : { fetch: fetcher }) }).initialize();
 }
 
 export interface ReconcileRequest {
@@ -178,11 +186,11 @@ export async function reconcileAttempt(request: ReconcileRequest): Promise<void>
   const state = new GitHubStateStore({
     repository: request.repository,
     token: request.githubToken,
-    fetch: request.fetch,
+    ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
   });
   const verifier = new GitHubExecutionQuiescenceVerifier({
     token: request.githubToken,
-    fetch: request.fetch,
+    ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
   });
   const attempt = attemptLocator(request.recordKey, request.attemptNumber, request.attemptId);
   const cliAttestation = request.cliSettled ? { processStoppedAndRequestsSettled: true as const } : undefined;
@@ -226,7 +234,7 @@ export async function reviseAttempt(request: ReviseRequest): Promise<void> {
   const state = new GitHubStateStore({
     repository: request.repository,
     token: request.githubToken,
-    fetch: request.fetch,
+    ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
   });
   const ledger = await state.read();
   const located = locateAttempt(ledger, request.recordKey, request.attemptNumber, request.attemptId);
