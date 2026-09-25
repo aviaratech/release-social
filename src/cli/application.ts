@@ -3,7 +3,6 @@ import { randomUUID } from 'node:crypto';
 import {
   createReleasePlan,
   type CanonicalReleaseSource,
-  type ReleaseSocialConfig,
   type RenderedDestinationPlan,
 } from '../index.js';
 import { GitHubExecutionQuiescenceVerifier, GitHubStateStore } from '../github/state-store.js';
