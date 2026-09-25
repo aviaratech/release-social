@@ -1,0 +1,51 @@
+name: Release social announcement
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: Numeric GitHub Release ID
+        required: true
+        type: string
+      mode:
+        description: preview or publish
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - publish
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-social-${{ github.repository_id }}-${{ inputs.release_id }}
+  cancel-in-progress: false
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: ${{ inputs.mode == 'publish' && 'write' || 'read' }}
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Replace this placeholder with the full 40-character commit SHA reviewed by your repository.
+      - uses: aviaratech/release-social@REPLACE_WITH_FULL_40_CHAR_COMMIT_SHA
+        with:
+          mode: ${{ inputs.mode }}
+          repository: ${{ github.repository }}
+          release-id: ${{ inputs.release_id }}
+          config-path: .github/release-social.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          # These secrets are used only when mode=publish. Do not provide them to PR/fork checks.
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
