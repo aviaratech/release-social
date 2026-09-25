@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseTweet } from 'twitter-text';
 
-import { createReleasePlan, type CanonicalReleaseSource, type RenderedDestinationPlan } from '../src/index.js';
+import { createReleasePlan, type CanonicalReleaseSource, type RenderedDestinationPlan } from '../../src/index.js';
 import {
   createXProvider,
   loadXCredentials,
@@ -9,7 +9,7 @@ import {
   X_ME_URL,
   type XCredentials,
   type XPreparedPayload,
-} from '../src/providers/x/index.js';
+} from '../../src/providers/x/index.js';
 
 const ACCOUNT_ID = '123456789012345678';
 const POST_ID = '987654321098765432';
