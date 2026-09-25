@@ -95,7 +95,11 @@ function validatePlainText(value: string, path: string): string {
   return text;
 }
 
-function findVisibleH2(text: string, fences: readonly TextRange[], comments: readonly CommentToken[]): Array<{
+function findVisibleH2(
+  text: string,
+  fences: readonly TextRange[],
+  comments: readonly CommentToken[],
+): Array<{
   title: string;
   start: number;
   contentStart: number;
@@ -144,7 +148,11 @@ export function parseReleaseNotes(input: string): ParsedReleaseNotes {
   for (const comment of comments) {
     if (!isReservedComment(comment.raw)) continue;
     if (isInside(comment.start, fences)) {
-      validationError('marker_in_fence', '$.releaseNotes', 'reserved release-social markers are not allowed inside fenced code');
+      validationError(
+        'marker_in_fence',
+        '$.releaseNotes',
+        'reserved release-social markers are not allowed inside fenced code',
+      );
     }
 
     if (supportedStandalone.has(comment.raw)) {
@@ -173,7 +181,11 @@ export function parseReleaseNotes(input: string): ParsedReleaseNotes {
     validationError('duplicate_version_marker', '$.releaseNotes', 'must contain exactly one release-social:v1 marker');
   }
   if ((counts.get(ANNOUNCEMENT_START) ?? 0) !== 1 || (counts.get(ANNOUNCEMENT_END) ?? 0) !== 1) {
-    validationError('announcement_marker_count', '$.releaseNotes', 'must contain exactly one announcement:start and announcement:end marker');
+    validationError(
+      'announcement_marker_count',
+      '$.releaseNotes',
+      'must contain exactly one announcement:start and announcement:end marker',
+    );
   }
   if ((counts.get(SKIP_MARKER) ?? 0) > 1) {
     validationError('duplicate_skip_marker', '$.releaseNotes', 'must not contain more than one social:skip marker');
@@ -196,10 +208,18 @@ export function parseReleaseNotes(input: string): ParsedReleaseNotes {
   const highlights = headings.filter((heading) => heading.title === 'Highlights');
   const upgradeNotes = headings.filter((heading) => heading.title === 'Upgrade notes');
   if (highlights.length !== 1) {
-    validationError('highlights_section_count', '$.releaseNotes', 'must contain exactly one visible ## Highlights section');
+    validationError(
+      'highlights_section_count',
+      '$.releaseNotes',
+      'must contain exactly one visible ## Highlights section',
+    );
   }
   if (upgradeNotes.length !== 1) {
-    validationError('upgrade_notes_section_count', '$.releaseNotes', 'must contain exactly one visible ## Upgrade notes section');
+    validationError(
+      'upgrade_notes_section_count',
+      '$.releaseNotes',
+      'must contain exactly one visible ## Upgrade notes section',
+    );
   }
   const highlightsHeading = highlights[0];
   const upgradeHeading = upgradeNotes[0];
@@ -216,7 +236,11 @@ export function parseReleaseNotes(input: string): ParsedReleaseNotes {
     validationError('empty_highlights', '$.releaseNotes', '## Highlights must retain technical release details');
   }
   if (upgradeText === '') {
-    validationError('empty_upgrade_notes', '$.releaseNotes', '## Upgrade notes must describe upgrade impact or state that there are no breaking changes');
+    validationError(
+      'empty_upgrade_notes',
+      '$.releaseNotes',
+      '## Upgrade notes must describe upgrade impact or state that there are no breaking changes',
+    );
   }
 
   const overrides: Partial<Record<Destination, string>> = {};
