@@ -42,7 +42,11 @@ function exactKeys(record: Record<string, unknown>, allowed: readonly string[], 
 
 function assertNoExternalLink(prose: string, path: string): void {
   if (/\b(?:https?:\/\/|www\.)/i.test(prose)) {
-    validationError('prose_contains_link', path, 'must not contain links; the canonical GitHub release URL is appended by the renderer');
+    validationError(
+      'prose_contains_link',
+      path,
+      'must not contain links; the canonical GitHub release URL is appended by the renderer',
+    );
   }
 }
 
@@ -176,7 +180,11 @@ function parseIdentity(input: unknown): CanonicalSourceIdentity {
 
 function parseTextSource(input: unknown): TextSource {
   if (!isRecord(input) || typeof input.kind !== 'string') {
-    validationError('invalid_text_source', '$.plan.textSource', 'must describe provider_override, configured_variant, or provider_default');
+    validationError(
+      'invalid_text_source',
+      '$.plan.textSource',
+      'must describe provider_override, configured_variant, or provider_default',
+    );
   }
   if (input.kind === 'provider_override') {
     exactKeys(input, ['kind'], '$.plan.textSource');
@@ -197,7 +205,11 @@ function parseAccount(input: unknown, destination: Destination): ProviderAccount
   if (destination === 'x') {
     exactKeys(input, ['destination', 'accountId'], '$.plan.account');
     if (input.destination !== 'x' || typeof input.accountId !== 'string' || !/^\d+$/.test(input.accountId)) {
-      validationError('invalid_plan_account', '$.plan.account', 'must contain destination=x and a numeric accountId string');
+      validationError(
+        'invalid_plan_account',
+        '$.plan.account',
+        'must contain destination=x and a numeric accountId string',
+      );
     }
     const account: XAccountIdentity = { destination: 'x', accountId: input.accountId };
     return account;
@@ -211,7 +223,11 @@ function parseAccount(input: unknown, destination: Destination): ProviderAccount
     typeof input.apiVersion !== 'string' ||
     !/^\d{6}$/.test(input.apiVersion)
   ) {
-    validationError('invalid_plan_account', '$.plan.account', 'must contain the validated LinkedIn author and apiVersion');
+    validationError(
+      'invalid_plan_account',
+      '$.plan.account',
+      'must contain the validated LinkedIn author and apiVersion',
+    );
   }
   const month = Number(input.apiVersion.slice(4));
   if (month < 1 || month > 12) {
@@ -243,11 +259,19 @@ export function validateRenderedPlan(input: unknown): RenderedDestinationPlan {
   const textSource = parseTextSource(input.textSource);
   const suffix = `\n\n${source.releaseUrl}`;
   if (!input.text.endsWith(suffix)) {
-    validationError('invalid_plan_text', '$.plan.text', 'must end with exactly one canonical release URL separated by one blank line');
+    validationError(
+      'invalid_plan_text',
+      '$.plan.text',
+      'must end with exactly one canonical release URL separated by one blank line',
+    );
   }
   const prose = input.text.slice(0, -suffix.length);
   if (prose === '' || prose.trim() !== prose) {
-    validationError('invalid_plan_text', '$.plan.text', 'prose must be non-empty with boundary whitespace already trimmed');
+    validationError(
+      'invalid_plan_text',
+      '$.plan.text',
+      'prose must be non-empty with boundary whitespace already trimmed',
+    );
   }
   assertNoExternalLink(prose, '$.plan.text');
   if (input.text.split(source.releaseUrl).length !== 2) {
@@ -264,7 +288,11 @@ export function validateRenderedPlan(input: unknown): RenderedDestinationPlan {
   };
   const expected = digestFor(planWithoutDigest);
   if (input.digest !== expected) {
-    validationError('plan_digest_mismatch', '$.plan.digest', 'does not match the canonical nonsecret plan inputs and final payload');
+    validationError(
+      'plan_digest_mismatch',
+      '$.plan.digest',
+      'does not match the canonical nonsecret plan inputs and final payload',
+    );
   }
   return { ...planWithoutDigest, digest: input.digest };
 }
