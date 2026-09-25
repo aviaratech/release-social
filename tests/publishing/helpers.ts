@@ -77,10 +77,10 @@ export function createPlans(
     x?: { accountId: string };
     linkedin?: { author: string; apiVersion: string };
   } = {};
-  if (options.includeX !== false) destinations.x = { accountId: X_ACCOUNT_ID };
+  if (options.includeX !== false) destinations.x = { accountId: options.xAccountId ?? X_ACCOUNT_ID };
   if (options.includeLinkedIn !== false) {
     destinations.linkedin = {
-      author: LINKEDIN_AUTHOR,
+      author: options.linkedInAuthor ?? LINKEDIN_AUTHOR,
       apiVersion: options.linkedInVersion ?? '202609',
     };
   }
