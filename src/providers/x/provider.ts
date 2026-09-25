@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 
-import { parseTweet } from 'twitter-text';
-
+import { measureXText, X_MAX_WEIGHTED_LENGTH } from '../../core/platform-text.js';
 import { validateRenderedPlan } from '../../core/render.js';
 import type {
   ProviderPreflightResult,
@@ -13,7 +12,6 @@ import type {
 import { validateXCredentials, type XCredentials } from './credentials.js';
 import { createAuthorizationHeader, fetchWithTimeout, X_CREATE_POST_URL, X_ME_URL, type XFetch } from './http.js';
 
-const MAX_WEIGHTED_LENGTH = 280;
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_DIAGNOSTIC_LENGTH = 320;
 
@@ -169,10 +167,10 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
       errors.push('X payload planDigest must be a lowercase SHA-256 digest.');
     if (payload.text.trim() === '') errors.push('X post text must not be empty.');
 
-    const parsed = parseTweet(payload.text);
-    if (!parsed.valid || parsed.weightedLength > MAX_WEIGHTED_LENGTH) {
+    const metrics = measureXText(payload.text);
+    if (!metrics.valid) {
       errors.push(
-        `X post text is ${parsed.weightedLength} weighted characters; the supported maximum is ${MAX_WEIGHTED_LENGTH}.`,
+        `X post text is ${metrics.weightedLength} weighted characters; the supported maximum is ${X_MAX_WEIGHTED_LENGTH}.`,
       );
     }
 
