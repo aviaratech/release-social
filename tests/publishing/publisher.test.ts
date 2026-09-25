@@ -153,6 +153,37 @@ describe('publishing orchestration', () => {
     expect(provider.publishCount).toBe(0);
   });
 
+  it('blocks changing the target account after a destination already has history', async () => {
+    const state = new MemoryStateRepository();
+    const [original] = createPlans({ includeLinkedIn: false });
+    const [changedAccount] = createPlans({
+      includeLinkedIn: false,
+      xAccountId: '999999999999999999',
+    });
+    if (original === undefined || changedAccount === undefined) throw new Error('Missing X plans.');
+
+    await publishRelease({
+      plans: [original],
+      providers: [new FakeProvider({ destination: 'x' })],
+      state,
+      execution: createCliExecutionIdentity('dddddddd-dddd-4ddd-8ddd-dddddddddddd'),
+      ...fixedClock(),
+    });
+
+    const provider = new FakeProvider({ destination: 'x' });
+    const result = await publishRelease({
+      plans: [changedAccount],
+      providers: [provider],
+      state,
+      execution: createCliExecutionIdentity('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee'),
+      ...fixedClock(),
+    });
+
+    expect(result.results[0]?.status).toBe('blocked');
+    expect(result.results[0]?.events.some((item) => item.code === 'record_identity_conflict')).toBe(true);
+    expect(provider.publishCount).toBe(0);
+  });
+
   it('allows a later-added destination without invalidating an existing success', async () => {
     const state = new MemoryStateRepository();
     const [xOnly] = createPlans({ includeLinkedIn: false });
