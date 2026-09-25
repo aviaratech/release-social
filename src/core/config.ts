@@ -1,5 +1,12 @@
 import { validationError } from './errors.js';
-import type { LinkedInDestinationConfig, ReleaseSocialConfig, TextVariant, XDestinationConfig } from './types.js';
+import type {
+  LinkedInDestinationConfig,
+  MissingAuthoredMode,
+  ReleaseContentConfig,
+  ReleaseSocialConfig,
+  TextVariant,
+  XDestinationConfig,
+} from './types.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -26,6 +33,25 @@ function parseTextVariant(value: unknown, path: string): TextVariant | undefined
     validationError('invalid_text_variant', path, 'must be "short" or "announcement"');
   }
   return value;
+}
+
+function parseMissingAuthored(value: unknown): MissingAuthoredMode | undefined {
+  if (value === undefined) return undefined;
+  if (value !== 'github-release-notes' && value !== 'error' && value !== 'skip') {
+    validationError(
+      'invalid_missing_authored_mode',
+      '$.content.missingAuthored',
+      'must be "github-release-notes", "error", or "skip"',
+    );
+  }
+  return value;
+}
+
+function parseContent(value: unknown): ReleaseContentConfig {
+  const record = assertRecord(value, '$.content');
+  assertExactKeys(record, ['missingAuthored'], '$.content');
+  const missingAuthored = parseMissingAuthored(record.missingAuthored);
+  return missingAuthored === undefined ? {} : { missingAuthored };
 }
 
 function parseX(value: unknown): XDestinationConfig {
@@ -70,7 +96,27 @@ function parseLinkedIn(value: unknown): LinkedInDestinationConfig {
 
 export function parseReleaseSocialConfig(input: unknown): ReleaseSocialConfig {
   const root = assertRecord(input, '$');
-  assertExactKeys(root, ['version', 'destinations'], '$');
+  assertExactKeys(root, ['version', 'content', 'destinations'], '
+
+  if (root.version !== 1) {
+    validationError('unsupported_config_version', '$.version', 'must be 1');
+  }
+
+  const destinations = assertRecord(root.destinations, '$.destinations');
+  assertExactKeys(destinations, ['x', 'linkedin'], '$.destinations');
+
+  if (Object.keys(destinations).length === 0) {
+    validationError('empty_destinations', '$.destinations', 'must configure x and/or linkedin');
+  }
+
+  const parsed: ReleaseSocialConfig['destinations'] = {};
+  if ('x' in destinations) parsed.x = parseX(destinations.x);
+  if ('linkedin' in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin);
+
+  const content = root.content === undefined ? undefined : parseContent(root.content);
+  return content === undefined ? { version: 1, destinations: parsed } : { version: 1, content, destinations: parsed };
+}
+);
 
   if (root.version !== 1) {
     validationError('unsupported_config_version', '$.version', 'must be 1');
