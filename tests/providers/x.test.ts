@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { parseTweet } from 'twitter-text';
 
-import { createReleasePlan, type CanonicalReleaseSource, type RenderedDestinationPlan } from '../../src/index.js';
+import {
+  createReleasePlan,
+  type CanonicalReleaseSource,
+  type ProviderPreflightResult,
+  type PublicationResult,
+  type RenderedDestinationPlan,
+} from '../../src/index.js';
 import {
   createXProvider,
   loadXCredentials,
@@ -49,14 +55,16 @@ function createMockFetch(...responders: MockResponder[]): {
   return { fetcher, calls };
 }
 
+function requestUrl(input: FetchInput): string {
+  if (typeof input === 'string') return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
 function jsonResponse(status: number, body: unknown, headers: HeadersInit = {}): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json',
-      ...headers,
-    },
-  });
+  const responseHeaders = new Headers(headers);
+  responseHeaders.set('content-type', 'application/json');
+  return new Response(JSON.stringify(body), { status, headers: responseHeaders });
 }
 
 function releaseBody(xText = 'X provider publishing is ready.'): string {
@@ -123,6 +131,18 @@ function identitySuccess(): Response {
   return jsonResponse(200, { data: { id: ACCOUNT_ID, username: 'fictional_account' } });
 }
 
+function requirePreflightRejected(result: ProviderPreflightResult) {
+  expect(result.status).toBe('rejected');
+  if (result.status !== 'rejected') throw new Error('Expected rejected X preflight.');
+  return result;
+}
+
+function requirePublicationRejected(result: PublicationResult) {
+  expect(result.status).toBe('rejected');
+  if (result.status !== 'rejected') throw new Error('Expected rejected X publication.');
+  return result;
+}
+
 async function preflightReady(provider: ReturnType<typeof createXProvider>, payload: XPreparedPayload): Promise<void> {
   const result = await provider.preflight(CREDENTIALS, payload);
   expect(result).toEqual({ status: 'ready' });
@@ -159,12 +179,10 @@ describe('X provider validation and preparation', () => {
     const provider = createXProvider({ fetch: mock.fetcher });
 
     const payload = provider.prepare(xPlan());
-    expect(payload).toEqual({
-      destination: 'x',
-      accountId: ACCOUNT_ID,
-      text: `X provider publishing is ready.\n\n${RELEASE_URL}`,
-      planDigest: expect.stringMatching(/^[0-9a-f]{64}$/),
-    });
+    expect(payload.destination).toBe('x');
+    expect(payload.accountId).toBe(ACCOUNT_ID);
+    expect(payload.text).toBe(`X provider publishing is ready.\n\n${RELEASE_URL}`);
+    expect(payload.planDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(provider.validate(payload)).toEqual({ ok: true });
     expect(mock.calls).toHaveLength(0);
   });
@@ -185,14 +203,16 @@ describe('X provider validation and preparation', () => {
       accessTokenSecret: 'token-secret',
     });
 
-    expect(() => loadXCredentials({ X_API_KEY: 'key' })).toThrow('X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET');
+    expect(() => loadXCredentials({ X_API_KEY: 'key' })).toThrow(
+      'X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET',
+    );
   });
 });
 
 describe('X live preflight', () => {
   it('constructs a signed read-only identity request and rejects account mismatch before any POST', async () => {
     const mock = createMockFetch((input, init) => {
-      expect(String(input)).toBe(X_ME_URL);
+      expect(requestUrl(input)).toBe(X_ME_URL);
       expect(init?.method).toBe('GET');
       expect(init?.redirect).toBe('manual');
 
@@ -211,16 +231,14 @@ describe('X live preflight', () => {
     const provider = createXProvider({ fetch: mock.fetcher });
     const payload = provider.prepare(xPlan());
 
-    const result = await provider.preflight(CREDENTIALS, payload);
-    expect(result).toEqual({
-      status: 'rejected',
-      reason: `Authenticated X account ID 999999999999999999 does not match configured accountId ${ACCOUNT_ID}.`,
-      retryClassification: 'permanent',
-    });
+    const result = requirePreflightRejected(await provider.preflight(CREDENTIALS, payload));
+    expect(result.reason).toBe(
+      `Authenticated X account ID 999999999999999999 does not match configured accountId ${ACCOUNT_ID}.`,
+    );
+    expect(result.retryClassification).toBe('permanent');
     expect(mock.calls).toHaveLength(1);
 
-    const publish = await provider.publish(CREDENTIALS, payload);
-    expect(publish.status).toBe('rejected');
+    requirePublicationRejected(await provider.publish(CREDENTIALS, payload));
     expect(mock.calls).toHaveLength(1);
   });
 
@@ -228,20 +246,18 @@ describe('X live preflight', () => {
     const authMock = createMockFetch(() => jsonResponse(401, { title: 'Unauthorized' }));
     const authProvider = createXProvider({ fetch: authMock.fetcher });
     const payload = authProvider.prepare(xPlan());
-    expect(await authProvider.preflight(CREDENTIALS, payload)).toMatchObject({
-      status: 'rejected',
-      retryClassification: 'permanent',
-    });
+    const authResult = requirePreflightRejected(await authProvider.preflight(CREDENTIALS, payload));
+    expect(authResult.retryClassification).toBe('permanent');
 
     const unavailableMock = createMockFetch(() =>
       jsonResponse(503, { title: 'Temporarily unavailable' }, { 'retry-after': '20' }),
     );
     const unavailableProvider = createXProvider({ fetch: unavailableMock.fetcher });
-    expect(await unavailableProvider.preflight(CREDENTIALS, payload)).toMatchObject({
-      status: 'rejected',
-      retryClassification: 'retryable',
-      reason: expect.stringContaining('Retry-After: 20'),
-    });
+    const unavailableResult = requirePreflightRejected(
+      await unavailableProvider.preflight(CREDENTIALS, payload),
+    );
+    expect(unavailableResult.retryClassification).toBe('retryable');
+    expect(unavailableResult.reason).toContain('Retry-After: 20');
   });
 });
 
@@ -250,7 +266,7 @@ describe('X publication', () => {
     const mock = createMockFetch(
       () => identitySuccess(),
       (input, init) => {
-        expect(String(input)).toBe(X_CREATE_POST_URL);
+        expect(requestUrl(input)).toBe(X_CREATE_POST_URL);
         expect(init?.method).toBe('POST');
         expect(init?.redirect).toBe('manual');
         expect(init?.body).toBe(JSON.stringify({ text: `X provider publishing is ready.\n\n${RELEASE_URL}` }));
@@ -274,46 +290,35 @@ describe('X publication', () => {
       providerId: POST_ID,
       url: `https://x.com/i/web/status/${POST_ID}`,
     });
-    expect(mock.calls.filter((call) => String(call.input) === X_CREATE_POST_URL)).toHaveLength(1);
+    expect(mock.calls.filter((call) => requestUrl(call.input) === X_CREATE_POST_URL)).toHaveLength(1);
   });
 
   it('classifies definite rejection, rate limiting, permission/balance failure, and Retry-After', async () => {
-    const cases = [
-      {
-        status: 400,
-        headers: {},
-        expected: { status: 'rejected', retryClassification: 'permanent' },
-      },
-      {
-        status: 402,
-        headers: {},
-        expected: { status: 'rejected', retryClassification: 'permanent' },
-      },
-      {
-        status: 403,
-        headers: {},
-        expected: { status: 'rejected', retryClassification: 'permanent' },
-      },
-      {
-        status: 429,
-        headers: { 'retry-after': '60' },
-        expected: { status: 'rejected', retryClassification: 'retryable' },
-      },
-    ] as const;
+    const cases: ReadonlyArray<{
+      status: number;
+      retryClassification: 'retryable' | 'permanent';
+      retryAfter?: string;
+    }> = [
+      { status: 400, retryClassification: 'permanent' },
+      { status: 402, retryClassification: 'permanent' },
+      { status: 403, retryClassification: 'permanent' },
+      { status: 429, retryClassification: 'retryable', retryAfter: '60' },
+    ];
 
     for (const testCase of cases) {
+      const responseHeaders = testCase.retryAfter ? { 'retry-after': testCase.retryAfter } : {};
       const mock = createMockFetch(
         () => identitySuccess(),
-        () => jsonResponse(testCase.status, { title: 'Synthetic rejection' }, testCase.headers),
+        () => jsonResponse(testCase.status, { title: 'Synthetic rejection' }, responseHeaders),
       );
       const provider = createXProvider({ fetch: mock.fetcher });
       const payload = provider.prepare(xPlan());
       await preflightReady(provider, payload);
 
-      const result = await provider.publish(CREDENTIALS, payload);
-      expect(result).toMatchObject(testCase.expected);
-      if (testCase.status === 429) {
-        expect(result.reason).toContain('Retry-After: 60');
+      const result = requirePublicationRejected(await provider.publish(CREDENTIALS, payload));
+      expect(result.retryClassification).toBe(testCase.retryClassification);
+      if (testCase.retryAfter) {
+        expect(result.reason).toContain(`Retry-After: ${testCase.retryAfter}`);
       }
     }
   });
@@ -336,7 +341,7 @@ describe('X publication', () => {
       await preflightReady(provider, payload);
 
       expect((await provider.publish(CREDENTIALS, payload)).status).toBe('unknown');
-      expect(mock.calls.filter((call) => String(call.input) === X_CREATE_POST_URL)).toHaveLength(1);
+      expect(mock.calls.filter((call) => requestUrl(call.input) === X_CREATE_POST_URL)).toHaveLength(1);
     }
   });
 
@@ -357,8 +362,7 @@ describe('X publication', () => {
     const payload = provider.prepare(xPlan());
     await preflightReady(provider, payload);
 
-    const result = await provider.publish(CREDENTIALS, payload);
-    expect(result.status).toBe('rejected');
+    const result = requirePublicationRejected(await provider.publish(CREDENTIALS, payload));
     expect(result.reason).toContain('[REDACTED]');
     expect(result.reason).not.toContain(CREDENTIALS.apiKey);
     expect(result.reason).not.toContain(CREDENTIALS.apiSecret);
@@ -378,7 +382,7 @@ describe('X publication', () => {
     await preflightReady(provider, payload);
 
     expect((await provider.publish(CREDENTIALS, payload)).status).toBe('unknown');
-    expect((await provider.publish(CREDENTIALS, payload)).status).toBe('rejected');
-    expect(mock.calls.filter((call) => String(call.input) === X_CREATE_POST_URL)).toHaveLength(1);
+    requirePublicationRejected(await provider.publish(CREDENTIALS, payload));
+    expect(mock.calls.filter((call) => requestUrl(call.input) === X_CREATE_POST_URL)).toHaveLength(1);
   });
 });
