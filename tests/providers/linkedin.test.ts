@@ -144,6 +144,12 @@ function requirePublicationRejected(result: PublicationResult) {
   return result;
 }
 
+function requirePublicationUnknown(result: PublicationResult) {
+  expect(result.status).toBe('unknown');
+  if (result.status !== 'unknown') throw new Error('Expected unknown LinkedIn publication.');
+  return result;
+}
+
 async function preflightReady(
   provider: ReturnType<typeof createLinkedInProvider>,
   payload: LinkedInPreparedPayload,
@@ -365,8 +371,7 @@ describe('LinkedIn publication', () => {
     const payload = provider.prepare(linkedInPlan());
     await preflightReady(provider, payload);
 
-    const result = await provider.publish(CREDENTIALS, payload);
-    expect(result.status).toBe('unknown');
+    const result = requirePublicationUnknown(await provider.publish(CREDENTIALS, payload));
     expect(result.reason).toContain('[REDACTED]');
     expect(result.reason).not.toContain(CREDENTIALS.accessToken);
     expect(result.reason.length).toBeLessThanOrEqual(500);
