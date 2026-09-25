@@ -258,7 +258,6 @@ export class GitHubStateStore implements PublishingStateRepository {
         );
       }
       const mutation = apply(snapshot.ledger);
-      validateLedger(mutation.next);
       const next = appendTransition(mutation.next, metadata);
       validateLedger(next);
 
