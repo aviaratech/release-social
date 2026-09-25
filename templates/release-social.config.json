@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "destinations": {
+    "x": {
+      "accountId": "123456789012345678"
+    },
+    "linkedin": {
+      "author": "urn:li:person:FictionalPerson123",
+      "apiVersion": "202609"
+    }
+  }
+}
