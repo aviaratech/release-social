@@ -123,10 +123,7 @@ function identitySuccess(): Response {
   return jsonResponse(200, { data: { id: ACCOUNT_ID, username: 'fictional_account' } });
 }
 
-async function preflightReady(
-  provider: ReturnType<typeof createXProvider>,
-  payload: XPreparedPayload,
-): Promise<void> {
+async function preflightReady(provider: ReturnType<typeof createXProvider>, payload: XPreparedPayload): Promise<void> {
   const result = await provider.preflight(CREDENTIALS, payload);
   expect(result).toEqual({ status: 'ready' });
 }
@@ -188,9 +185,7 @@ describe('X provider validation and preparation', () => {
       accessTokenSecret: 'token-secret',
     });
 
-    expect(() => loadXCredentials({ X_API_KEY: 'key' })).toThrow(
-      'X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET',
-    );
+    expect(() => loadXCredentials({ X_API_KEY: 'key' })).toThrow('X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET');
   });
 });
 

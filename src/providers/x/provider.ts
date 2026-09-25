@@ -11,13 +11,7 @@ import type {
   RenderedDestinationPlan,
 } from '../../core/types.js';
 import { validateXCredentials, type XCredentials } from './credentials.js';
-import {
-  createAuthorizationHeader,
-  fetchWithTimeout,
-  X_CREATE_POST_URL,
-  X_ME_URL,
-  type XFetch,
-} from './http.js';
+import { createAuthorizationHeader, fetchWithTimeout, X_CREATE_POST_URL, X_ME_URL, type XFetch } from './http.js';
 
 const MAX_WEIGHTED_LENGTH = 280;
 const DEFAULT_TIMEOUT_MS = 10_000;
@@ -101,17 +95,11 @@ function retryAfterSuffix(response: Response): string {
   return ` Retry-After: ${retryAfter.slice(0, 80)}.`;
 }
 
-function rejected(
-  reason: string,
-  retryClassification: 'retryable' | 'permanent',
-): PublicationResult {
+function rejected(reason: string, retryClassification: 'retryable' | 'permanent'): PublicationResult {
   return { status: 'rejected', reason, retryClassification };
 }
 
-function preflightRejected(
-  reason: string,
-  retryClassification: 'retryable' | 'permanent',
-): ProviderPreflightResult {
+function preflightRejected(reason: string, retryClassification: 'retryable' | 'permanent'): ProviderPreflightResult {
   return { status: 'rejected', reason, retryClassification };
 }
 
@@ -161,7 +149,8 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
 
     if (payload.destination !== 'x') errors.push('X payload destination must be x.');
     if (!/^\d+$/.test(payload.accountId)) errors.push('X accountId must be a numeric user ID.');
-    if (!/^[0-9a-f]{64}$/.test(payload.planDigest)) errors.push('X payload planDigest must be a lowercase SHA-256 digest.');
+    if (!/^[0-9a-f]{64}$/.test(payload.planDigest))
+      errors.push('X payload planDigest must be a lowercase SHA-256 digest.');
     if (payload.text.trim() === '') errors.push('X post text must not be empty.');
 
     const parsed = parseTweet(payload.text);

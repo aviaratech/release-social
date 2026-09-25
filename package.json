@@ -44,6 +44,10 @@
     "test": "vitest run",
     "checks": "npm run format:check && npm run lint && npm run typecheck && npm test"
   },
+  "dependencies": {
+    "oauth": "0.10.2",
+    "twitter-text": "3.1.0"
+  },
   "devDependencies": {
     "@types/node": "^25.9.1",
     "@types/oauth": "0.9.6",
@@ -58,9 +62,5 @@
     "node": ">=24.21.0 <25",
     "npm": "11.19.0"
   },
-  "packageManager": "npm@11.19.0",
-  "dependencies": {
-    "oauth": "0.10.2",
-    "twitter-text": "3.1.0"
-  }
+  "packageManager": "npm@11.19.0"
 }
