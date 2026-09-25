@@ -251,6 +251,12 @@ export class GitHubStateStore implements PublishingStateRepository {
   ): Promise<T> {
     for (let retry = 0; retry <= this.maxConflictRetries; retry += 1) {
       const snapshot = await this.readSnapshot();
+      if (snapshot.ledger.transitions.some((transition) => transition.id === metadata.id)) {
+        throw new PublishingError(
+          'state_conflict',
+          'The requested state transition identifier already exists in verified history.',
+        );
+      }
       const mutation = apply(snapshot.ledger);
       validateLedger(mutation.next);
       const next = appendTransition(mutation.next, metadata);
