@@ -2,7 +2,6 @@ import { readFile } from 'node:fs/promises';
 
 import { GitHubReleaseReader } from '../github/releases.js';
 import {
-  actionExecution,
   cliExecution,
   initializePublishingState,
   prepareRelease,
