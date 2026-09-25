@@ -374,7 +374,6 @@ export function createEmptyLedger(): PublishingLedgerV1 {
   });
 }
 
-
 function validateTransitionHistory(
   records: Record<string, DestinationRecord>,
   transitions: readonly LedgerTransition[],
@@ -436,9 +435,7 @@ function validateTransitionHistory(
         }
       }
 
-      const revision = record.revisions.find(
-        (item) => item.fromAttemptNumber === attempt.attemptNumber,
-      );
+      const revision = record.revisions.find((item) => item.fromAttemptNumber === attempt.attemptNumber);
       const revisionTransitions = attemptTransitions.filter(
         ({ transition }) => transition.kind === 'revise_plan',
       );
@@ -484,7 +481,6 @@ export function validateLedger(value: unknown): PublishingLedgerV1 {
   for (const transition of transitions) {
     if (transitionIds.has(transition.id)) fail('$.transitions contains a duplicate transition id.');
     transitionIds.add(transition.id);
-
   }
 
   validateTransitionHistory(records, transitions);
