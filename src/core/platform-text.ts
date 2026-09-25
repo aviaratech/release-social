@@ -58,9 +58,7 @@ export function measureLinkedInText(value: string): LinkedInTextMetrics {
   const sourceLength = linkedInCharacterLength(value);
   const encodedLength = linkedInCharacterLength(commentary);
   return {
-    valid:
-      sourceLength <= LINKEDIN_COMMENTARY_MAX_CHARACTERS &&
-      encodedLength <= LINKEDIN_COMMENTARY_MAX_CHARACTERS,
+    valid: sourceLength <= LINKEDIN_COMMENTARY_MAX_CHARACTERS && encodedLength <= LINKEDIN_COMMENTARY_MAX_CHARACTERS,
     sourceLength,
     encodedLength,
     commentary,

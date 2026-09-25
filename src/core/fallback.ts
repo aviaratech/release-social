@@ -2,11 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { validationError } from './errors.js';
 import { destinationTextFits } from './platform-text.js';
-import type {
-  CanonicalReleaseSource,
-  Destination,
-  GitHubReleaseNotesTextSource,
-} from './types.js';
+import type { CanonicalReleaseSource, Destination, GitHubReleaseNotesTextSource } from './types.js';
 
 const FENCE_PATTERN = /^\s*(`{3,}|~{3,})/;
 const HTML_BLOCK_PATTERN = /<(script|style|iframe|object|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi;
@@ -101,9 +97,7 @@ function sentenceEntries(value: string): string[] {
 }
 
 export function extractGitHubReleaseChangeEntries(body: string): string[] {
-  const normalized = normalizeLineEndings(body)
-    .replace(HTML_BLOCK_PATTERN, '')
-    .replace(HTML_COMMENT_PATTERN, '');
+  const normalized = normalizeLineEndings(body).replace(HTML_BLOCK_PATTERN, '').replace(HTML_COMMENT_PATTERN, '');
   const withoutCode = stripFencedCode(normalized);
   const entries: string[] = [];
   let skipContributorSection = false;
@@ -120,8 +114,7 @@ export function extractGitHubReleaseChangeEntries(body: string): string[] {
     if (heading?.[1]) {
       const headingText = cleanInlineMarkdown(heading[1]);
       skipContributorSection =
-        headingText.toLowerCase() === 'new contributors' ||
-        headingText.toLowerCase() === 'contributors';
+        headingText.toLowerCase() === 'new contributors' || headingText.toLowerCase() === 'contributors';
       continue;
     }
 

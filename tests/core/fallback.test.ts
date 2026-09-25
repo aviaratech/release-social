@@ -53,7 +53,10 @@ const GENERATED_BODY = [
   '**Full Changelog**: https://github.com/fictional/example-release-app/compare/v1.2.2...v1.2.3',
 ].join('\n');
 
-function source(body: string = GENERATED_BODY, overrides: Partial<CanonicalReleaseSource> = {}): CanonicalReleaseSource {
+function source(
+  body: string = GENERATED_BODY,
+  overrides: Partial<CanonicalReleaseSource> = {},
+): CanonicalReleaseSource {
   return {
     repositoryId: 424242,
     repository: 'fictional/example-release-app',
@@ -144,16 +147,10 @@ describe('GitHub release-note fallback selection', () => {
     );
     expectCode(
       () =>
-        createReleasePlan(
-          source(['Ordinary body.', '```md', '<!-- social:skip -->', '```'].join('\n')),
-          bothConfig(),
-        ),
+        createReleasePlan(source(['Ordinary body.', '```md', '<!-- social:skip -->', '```'].join('\n')), bothConfig()),
       'marker_in_fence',
     );
-    expectCode(
-      () => createReleasePlan(source('Ordinary body.\n<!-- social:skip'), bothConfig()),
-      'malformed_comment',
-    );
+    expectCode(() => createReleasePlan(source('Ordinary body.\n<!-- social:skip'), bothConfig()), 'malformed_comment');
   });
 
   it('preserves source eligibility ahead of authored-content inspection', () => {
@@ -224,7 +221,10 @@ describe('fallback rendering and digest stability', () => {
   });
 
   it('emits metadata-only copy and an explicit diagnostic for empty or unusable bodies', () => {
-    for (const body of ['', '## New Contributors\n* @user made their first contribution in https://github.com/a/b/pull/1']) {
+    for (const body of [
+      '',
+      '## New Contributors\n* @user made their first contribution in https://github.com/a/b/pull/1',
+    ]) {
       const result = createReleasePlan(source(body), {
         version: 1,
         destinations: { x: { accountId: '123456789012345678' } },
