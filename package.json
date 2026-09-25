@@ -2,15 +2,14 @@
   "name": "@aviaratech/release-social",
   "version": "0.1.0",
   "description": "Deterministic release-announcement contracts and planning for social publishing",
+  "homepage": "https://github.com/aviaratech/release-social#readme",
+  "bugs": {
+    "url": "https://github.com/aviaratech/release-social/issues"
+  },
   "license": "MIT",
-  "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aviaratech/release-social.git"
   },
   "files": [
     "dist",
@@ -19,13 +18,14 @@
     "CONTRIBUTING.md",
     "LICENSE"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aviaratech/release-social.git"
-  },
-  "homepage": "https://github.com/aviaratech/release-social#readme",
-  "bugs": {
-    "url": "https://github.com/aviaratech/release-social/issues"
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "publishConfig": {
     "access": "public"
