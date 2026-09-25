@@ -145,9 +145,23 @@ function validateTerminal(
   };
 }
 
-function validateAttempt(value: unknown, destination: Destination, expectedNumber: number, path: string): PublishingAttempt {
+function validateAttempt(
+  value: unknown,
+  destination: Destination,
+  expectedNumber: number,
+  path: string,
+): PublishingAttempt {
   const record = requireRecord(value, path);
-  const allowed = ['attemptNumber', 'attemptId', 'payloadDigest', 'schemaVersion', 'implementationId', 'execution', 'startedAt', 'state'];
+  const allowed = [
+    'attemptNumber',
+    'attemptId',
+    'payloadDigest',
+    'schemaVersion',
+    'implementationId',
+    'execution',
+    'startedAt',
+    'state',
+  ];
   if ('terminal' in record) allowed.push('terminal');
   requireExactKeys(record, allowed, path);
 
@@ -328,9 +342,7 @@ function checksumFor(ledger: Omit<PublishingLedgerV1, 'checksum'>): string {
   return createHash('sha256').update(canonicalJson(ledger), 'utf8').digest('hex');
 }
 
-export function sealLedger(
-  ledger: Omit<PublishingLedgerV1, 'checksum'> | PublishingLedgerV1,
-): PublishingLedgerV1 {
+export function sealLedger(ledger: Omit<PublishingLedgerV1, 'checksum'> | PublishingLedgerV1): PublishingLedgerV1 {
   const withoutChecksum: Omit<PublishingLedgerV1, 'checksum'> = {
     schemaVersion: ledger.schemaVersion,
     implementationId: ledger.implementationId,
@@ -393,10 +405,7 @@ export function cloneLedger(ledger: PublishingLedgerV1): PublishingLedgerV1 {
   return structuredClone(ledger);
 }
 
-export function appendTransition(
-  ledger: PublishingLedgerV1,
-  metadata: StateTransitionMetadata,
-): PublishingLedgerV1 {
+export function appendTransition(ledger: PublishingLedgerV1, metadata: StateTransitionMetadata): PublishingLedgerV1 {
   const next = cloneLedger(ledger);
   if (next.transitions.some((transition) => transition.id === metadata.id)) {
     return next;
@@ -424,10 +433,7 @@ export function createCliExecutionIdentity(invocationId = randomUUID()): PublicE
   return { kind: 'cli', invocationId };
 }
 
-export function createGitHubRunExecutionIdentity(
-  repository: string,
-  runId: number,
-): PublicExecutionIdentity {
+export function createGitHubRunExecutionIdentity(repository: string, runId: number): PublicExecutionIdentity {
   return {
     kind: 'github_run',
     repository,
@@ -460,12 +466,7 @@ export function recordKey(
 
 export function recordKeyForPlan(planInput: RenderedDestinationPlan): string {
   const plan = validateRenderedPlan(planInput);
-  return recordKey(
-    plan.source.repositoryId,
-    plan.source.releaseId,
-    plan.destination,
-    accountIdentityForPlan(plan),
-  );
+  return recordKey(plan.source.repositoryId, plan.source.releaseId, plan.destination, accountIdentityForPlan(plan));
 }
 
 export function findRecordForPlan(
@@ -477,10 +478,7 @@ export function findRecordForPlan(
   return ledger.records[recordKeyForPlan(plan)];
 }
 
-export function assertNoAccountConflict(
-  ledger: PublishingLedgerV1,
-  planInput: RenderedDestinationPlan,
-): void {
+export function assertNoAccountConflict(ledger: PublishingLedgerV1, planInput: RenderedDestinationPlan): void {
   const plan = validateRenderedPlan(planInput);
   const accountIdentity = accountIdentityForPlan(plan);
   for (const record of Object.values(ledger.records)) {
@@ -818,7 +816,10 @@ export function validatePublicPost(destination: Destination, providerId: string,
     return;
   }
 
-  if (!/^urn:li:(?:share|ugcPost):\d+$/.test(providerId) || url !== `https://www.linkedin.com/feed/update/${providerId}`) {
+  if (
+    !/^urn:li:(?:share|ugcPost):\d+$/.test(providerId) ||
+    url !== `https://www.linkedin.com/feed/update/${providerId}`
+  ) {
     throw new PublishingError('invalid_reconciliation', 'LinkedIn public post identity is not canonical.');
   }
 }

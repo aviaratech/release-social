@@ -57,9 +57,4 @@ export type {
   StateTransitionMetadata,
   TerminalState,
 } from './types.js';
-export {
-  PUBLISHING_IMPLEMENTATION_ID,
-  PUBLISHING_SCHEMA_VERSION,
-  STATE_BRANCH,
-  STATE_PATH,
-} from './types.js';
+export { PUBLISHING_IMPLEMENTATION_ID, PUBLISHING_SCHEMA_VERSION, STATE_BRANCH, STATE_PATH } from './types.js';

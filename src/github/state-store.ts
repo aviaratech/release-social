@@ -1,12 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { PublishingError } from '../publishing/errors.js';
-import {
-  appendTransition,
-  canonicalJson,
-  createEmptyLedger,
-  validateLedger,
-} from '../publishing/ledger.js';
+import { appendTransition, canonicalJson, createEmptyLedger, validateLedger } from '../publishing/ledger.js';
 import {
   STATE_BRANCH,
   STATE_PATH,
@@ -124,11 +119,7 @@ function parseTree(value: unknown): { sha: string; entries: GitTreeEntry[] } {
   }
   const entries = root.tree.map((entry, index) => {
     const item = requireRecord(entry, `tree entry ${index}`);
-    if (
-      typeof item.path !== 'string' ||
-      typeof item.mode !== 'string' ||
-      typeof item.type !== 'string'
-    ) {
+    if (typeof item.path !== 'string' || typeof item.mode !== 'string' || typeof item.type !== 'string') {
       throw new PublishingError('state_corrupt', 'Publishing state tree entry metadata is malformed.');
     }
     return {
@@ -212,11 +203,7 @@ export class GitHubStateStore implements PublishingStateRepository {
     const ledger = createEmptyLedger();
     const blobSha = await this.createBlob(canonicalJson(ledger) + '\n');
     const treeSha = await this.createTree(undefined, blobSha);
-    const commitSha = await this.createCommit(
-      treeSha,
-      [],
-      'Initialize release-social publishing state',
-    );
+    const commitSha = await this.createCommit(treeSha, [], 'Initialize release-social publishing state');
 
     try {
       const response = await this.request(
@@ -556,10 +543,7 @@ export class GitHubExecutionQuiescenceVerifier implements ExecutionQuiescenceVer
     }
 
     const { owner, name } = repositoryParts(execution.repository);
-    const url = new URL(
-      `/repos/${owner}/${name}/actions/runs/${execution.runId}`,
-      API_ORIGIN,
-    );
+    const url = new URL(`/repos/${owner}/${name}/actions/runs/${execution.runId}`, API_ORIGIN);
     const headers = new Headers();
     headers.set('accept', 'application/vnd.github+json');
     headers.set('authorization', `Bearer ${this.token}`);

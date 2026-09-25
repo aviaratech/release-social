@@ -139,7 +139,14 @@ export async function publishRelease(options: PublishReleaseOptions): Promise<Pu
   if (blocked) {
     for (const candidate of candidates) {
       candidate.result.status = 'blocked';
-      event(candidate.result.events, 'preflight', 'skipped', monotonicNow(), monotonicNow(), 'run_blocked_before_preflight');
+      event(
+        candidate.result.events,
+        'preflight',
+        'skipped',
+        monotonicNow(),
+        monotonicNow(),
+        'run_blocked_before_preflight',
+      );
     }
     return { results };
   }

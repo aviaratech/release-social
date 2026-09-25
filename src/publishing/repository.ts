@@ -1,12 +1,6 @@
-import type {
-  BoundProvider,
-  PublisherBinding,
-  PublishingStateRepository,
-} from './types.js';
+import type { BoundProvider, PublisherBinding, PublishingStateRepository } from './types.js';
 
-export function bindProvider<Credentials, Payload>(
-  binding: PublisherBinding<Credentials, Payload>,
-): BoundProvider {
+export function bindProvider<Credentials, Payload>(binding: PublisherBinding<Credentials, Payload>): BoundProvider {
   const { provider, credentials } = binding;
   return {
     destination: provider.destination,

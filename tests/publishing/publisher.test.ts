@@ -7,12 +7,7 @@ import {
   recordKeyForPlan,
 } from '../../src/publishing/ledger.js';
 import { publishRelease } from '../../src/publishing/publisher.js';
-import {
-  createPlans,
-  FakeProvider,
-  fixedClock,
-  MemoryStateRepository,
-} from './helpers.js';
+import { createPlans, FakeProvider, fixedClock, MemoryStateRepository } from './helpers.js';
 
 describe('publishing orchestration', () => {
   it('preflights every destination before the first social POST', async () => {
@@ -68,9 +63,7 @@ describe('publishing orchestration', () => {
     const x = new FakeProvider({ destination: 'x' });
     const linkedin = new FakeProvider({
       destination: 'linkedin',
-      publications: [
-        { status: 'rejected', reason: 'synthetic non-creation', retryClassification: 'permanent' },
-      ],
+      publications: [{ status: 'rejected', reason: 'synthetic non-creation', retryClassification: 'permanent' }],
     });
 
     const first = await publishRelease({

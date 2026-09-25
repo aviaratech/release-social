@@ -134,12 +134,7 @@ export interface StageEvent {
   code?: string;
 }
 
-export type DestinationPublicationStatus =
-  | 'published'
-  | 'already_published'
-  | 'rejected'
-  | 'unknown'
-  | 'blocked';
+export type DestinationPublicationStatus = 'published' | 'already_published' | 'rejected' | 'unknown' | 'blocked';
 
 export interface DestinationPublicationResult {
   destination: Destination;

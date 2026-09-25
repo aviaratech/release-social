@@ -6,12 +6,7 @@ import type {
 } from '../../src/core/types.js';
 import { createReleasePlan, type CanonicalReleaseSource } from '../../src/index.js';
 import { PublishingError } from '../../src/publishing/errors.js';
-import {
-  appendTransition,
-  cloneLedger,
-  createEmptyLedger,
-  validateLedger,
-} from '../../src/publishing/ledger.js';
+import { appendTransition, cloneLedger, createEmptyLedger, validateLedger } from '../../src/publishing/ledger.js';
 import type {
   BoundProvider,
   ExecutionQuiescenceVerifier,
@@ -67,13 +62,15 @@ function body(xText: string, linkedInText: string): string {
   ].join('\n');
 }
 
-export function createPlans(options: {
-  xText?: string;
-  linkedInText?: string;
-  linkedInVersion?: string;
-  includeX?: boolean;
-  includeLinkedIn?: boolean;
-} = {}): RenderedDestinationPlan[] {
+export function createPlans(
+  options: {
+    xText?: string;
+    linkedInText?: string;
+    linkedInVersion?: string;
+    includeX?: boolean;
+    includeLinkedIn?: boolean;
+  } = {},
+): RenderedDestinationPlan[] {
   const xText = options.xText ?? 'Fictional X release.';
   const linkedInText = options.linkedInText ?? 'Fictional LinkedIn release.';
   const destinations: {

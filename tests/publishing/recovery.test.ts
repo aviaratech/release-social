@@ -1,23 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  createCliExecutionIdentity,
-  findRecordForPlan,
-  recordKeyForPlan,
-} from '../../src/publishing/ledger.js';
+import { createCliExecutionIdentity, findRecordForPlan, recordKeyForPlan } from '../../src/publishing/ledger.js';
 import { publishRelease } from '../../src/publishing/publisher.js';
 import {
   attemptLocator,
   reconcileNonCreationAttempt,
   reviseRejectedAttemptPlan,
 } from '../../src/publishing/reconciliation.js';
-import {
-  createPlans,
-  FakeProvider,
-  FakeQuiescenceVerifier,
-  fixedClock,
-  MemoryStateRepository,
-} from './helpers.js';
+import { createPlans, FakeProvider, FakeQuiescenceVerifier, fixedClock, MemoryStateRepository } from './helpers.js';
 
 describe('separate-process interruption and resume', () => {
   it('skips success, stops on uncertain interruption, reconciles quiescent non-creation, and matches uninterrupted logical results', async () => {
@@ -92,10 +82,7 @@ describe('separate-process interruption and resume', () => {
     const uninterruptedState = new MemoryStateRepository();
     const uninterrupted = await publishRelease({
       plans,
-      providers: [
-        new FakeProvider({ destination: 'x' }),
-        new FakeProvider({ destination: 'linkedin' }),
-      ],
+      providers: [new FakeProvider({ destination: 'x' }), new FakeProvider({ destination: 'linkedin' })],
       state: uninterruptedState,
       execution: createCliExecutionIdentity('10000000-0000-4000-8000-000000000004'),
       ...fixedClock(),
@@ -116,9 +103,7 @@ describe('separate-process interruption and resume', () => {
         new FakeProvider({ destination: 'x' }),
         new FakeProvider({
           destination: 'linkedin',
-          publications: [
-            { status: 'rejected', reason: 'unsupported version', retryClassification: 'permanent' },
-          ],
+          publications: [{ status: 'rejected', reason: 'unsupported version', retryClassification: 'permanent' }],
         }),
       ],
       state,
@@ -135,10 +120,7 @@ describe('separate-process interruption and resume', () => {
     const blockedProvider = new FakeProvider({ destination: 'linkedin' });
     const blocked = await publishRelease({
       plans: newPlans,
-      providers: [
-        new FakeProvider({ destination: 'x' }),
-        blockedProvider,
-      ],
+      providers: [new FakeProvider({ destination: 'x' }), blockedProvider],
       state,
       execution: createCliExecutionIdentity('20000000-0000-4000-8000-000000000002'),
       ...fixedClock(),

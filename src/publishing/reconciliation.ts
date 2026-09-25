@@ -185,10 +185,6 @@ export async function reviseRejectedAttemptPlan(options: RevisePlanOptions): Pro
   );
 }
 
-export function attemptLocator(
-  recordKey: string,
-  attemptNumber: number,
-  attemptId: string,
-): AttemptLocator {
+export function attemptLocator(recordKey: string, attemptNumber: number, attemptId: string): AttemptLocator {
   return { recordKey, attemptNumber, attemptId };
 }

@@ -2,10 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-  GitHubExecutionQuiescenceVerifier,
-  GitHubStateStore,
-} from '../../src/github/state-store.js';
+import { GitHubExecutionQuiescenceVerifier, GitHubStateStore } from '../../src/github/state-store.js';
 import { PublishingError } from '../../src/publishing/errors.js';
 import {
   appendPendingAttempt,
@@ -19,11 +16,7 @@ import {
   sealLedger,
   validateLedger,
 } from '../../src/publishing/ledger.js';
-import {
-  STATE_BRANCH,
-  STATE_PATH,
-  type PublishingLedgerV1,
-} from '../../src/publishing/types.js';
+import { STATE_BRANCH, STATE_PATH, type PublishingLedgerV1 } from '../../src/publishing/types.js';
 import { createPlans, fixedClock } from '../publishing/helpers.js';
 
 interface FakeTreeEntry {
@@ -372,9 +365,7 @@ describe('GitHubStateStore', () => {
     await state.initialize();
 
     api.patchMode = 'apply_then_throw';
-    await expect(
-      appendXAttempt(state, '40000000-0000-4000-8000-000000000001'),
-    ).resolves.toBeUndefined();
+    await expect(appendXAttempt(state, '40000000-0000-4000-8000-000000000001')).resolves.toBeUndefined();
 
     const ledger = await state.read();
     expect(Object.keys(ledger.records)).toHaveLength(1);
@@ -387,9 +378,9 @@ describe('GitHubStateStore', () => {
     await state.initialize();
 
     api.patchMode = 'throw_before_apply';
-    await expect(
-      appendXAttempt(state, '40000000-0000-4000-8000-000000000002'),
-    ).rejects.toMatchObject({ code: 'state_uncertain' });
+    await expect(appendXAttempt(state, '40000000-0000-4000-8000-000000000002')).rejects.toMatchObject({
+      code: 'state_uncertain',
+    });
 
     expect(Object.keys((await state.read()).records)).toHaveLength(0);
   });
@@ -564,8 +555,6 @@ describe('GitHubExecutionQuiescenceVerifier', () => {
 
     const cli = createCliExecutionIdentity('40000000-0000-4000-8000-00000000000f');
     await expect(verifier.verify(cli)).rejects.toMatchObject({ code: 'execution_not_quiescent' });
-    await expect(
-      verifier.verify(cli, { processStoppedAndRequestsSettled: true }),
-    ).resolves.toBeUndefined();
+    await expect(verifier.verify(cli, { processStoppedAndRequestsSettled: true })).resolves.toBeUndefined();
   });
 });
