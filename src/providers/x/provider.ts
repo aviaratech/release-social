@@ -63,6 +63,21 @@ function credentialsApprovalKey(credentials: XCredentials, accountId: string): s
     .digest('hex');
 }
 
+function replaceControlCharacters(value: string): string {
+  let result = '';
+  for (const character of value) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    const isControl =
+      (codePoint >= 0 && codePoint <= 8) ||
+      codePoint === 11 ||
+      codePoint === 12 ||
+      (codePoint >= 14 && codePoint <= 31) ||
+      codePoint === 127;
+    result += isControl ? ' ' : character;
+  }
+  return result;
+}
+
 function sanitizeDiagnostic(value: string, credentials: XCredentials): string {
   let result = value.replace(/authorization\s*[:=]\s*[^\r\n]+/gi, 'Authorization: [REDACTED]');
 
@@ -75,15 +90,12 @@ function sanitizeDiagnostic(value: string, credentials: XCredentials): string {
     if (secret !== '') result = result.split(secret).join('[REDACTED]');
   }
 
-  result = result.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, ' ');
-  return result.trim().slice(0, MAX_DIAGNOSTIC_LENGTH);
+  return replaceControlCharacters(result).trim().slice(0, MAX_DIAGNOSTIC_LENGTH);
 }
 
-async function boundedResponseDetail(response: Response, credentials: XCredentials): Promise<string> {
+async function responseBody(response: Response): Promise<string> {
   try {
-    const body = await response.text();
-    if (body.trim() === '') return '';
-    return sanitizeDiagnostic(body, credentials);
+    return (await response.text()).slice(0, 4096);
   } catch {
     return '';
   }
@@ -196,7 +208,8 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
       );
     }
 
-    const detail = await boundedResponseDetail(response, credentials);
+    const body = await responseBody(response);
+    const detail = sanitizeDiagnostic(body, credentials);
     const retryAfter = retryAfterSuffix(response);
 
     if (response.status >= 300 && response.status < 400) {
@@ -220,7 +233,7 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
       );
     }
 
-    const userId = authenticatedUserId(detail);
+    const userId = authenticatedUserId(body);
     if (userId === undefined) {
       return preflightRejected('X identity verification returned a malformed success response.', 'retryable');
     }
@@ -281,11 +294,12 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
       };
     }
 
-    const detail = await boundedResponseDetail(response, credentials);
+    const bodyText = await responseBody(response);
+    const detail = sanitizeDiagnostic(bodyText, credentials);
     const retryAfter = retryAfterSuffix(response);
 
     if (response.ok) {
-      const providerId = responseDataId(detail);
+      const providerId = responseDataId(bodyText);
       if (providerId === undefined) {
         return {
           status: 'unknown',
