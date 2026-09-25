@@ -49,7 +49,7 @@ function authenticatedUserId(body: string): string | undefined {
   return responseDataId(body);
 }
 
-function credentialsApprovalKey(credentials: XCredentials, accountId: string): string {
+function credentialsApprovalKey(credentials: XCredentials, payload: XPreparedPayload): string {
   return createHash('sha256')
     .update(credentials.apiKey)
     .update('\0')
@@ -59,7 +59,11 @@ function credentialsApprovalKey(credentials: XCredentials, accountId: string): s
     .update('\0')
     .update(credentials.accessTokenSecret)
     .update('\0')
-    .update(accountId)
+    .update(payload.accountId)
+    .update('\0')
+    .update(payload.planDigest)
+    .update('\0')
+    .update(payload.text)
     .digest('hex');
 }
 
@@ -101,10 +105,10 @@ async function responseBody(response: Response): Promise<string> {
   }
 }
 
-function retryAfterSuffix(response: Response): string {
+function retryAfterSuffix(response: Response, credentials: XCredentials): string {
   const retryAfter = response.headers.get('retry-after');
   if (!retryAfter) return '';
-  return ` Retry-After: ${retryAfter.slice(0, 80)}.`;
+  return ` Retry-After: ${sanitizeDiagnostic(retryAfter, credentials).slice(0, 80)}.`;
 }
 
 function rejected(reason: string, retryClassification: 'retryable' | 'permanent'): PublicationResult {
@@ -210,7 +214,7 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
 
     const body = await responseBody(response);
     const detail = sanitizeDiagnostic(body, credentials);
-    const retryAfter = retryAfterSuffix(response);
+    const retryAfter = retryAfterSuffix(response, credentials);
 
     if (response.status >= 300 && response.status < 400) {
       return preflightRejected(
@@ -245,7 +249,7 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
       );
     }
 
-    this.approvals.add(credentialsApprovalKey(credentials, payload.accountId));
+    this.approvals.add(credentialsApprovalKey(credentials, payload));
     return { status: 'ready' };
   }
 
@@ -260,7 +264,7 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
       return rejected(credentialErrors.join(' '), 'permanent');
     }
 
-    const approvalKey = credentialsApprovalKey(credentials, payload.accountId);
+    const approvalKey = credentialsApprovalKey(credentials, payload);
     if (!this.approvals.delete(approvalKey)) {
       return rejected(
         'X publish requires a successful live preflight for this account and credential set before the create request.',
@@ -296,7 +300,7 @@ export class XProvider implements ReleaseSocialProvider<XCredentials, XPreparedP
 
     const bodyText = await responseBody(response);
     const detail = sanitizeDiagnostic(bodyText, credentials);
-    const retryAfter = retryAfterSuffix(response);
+    const retryAfter = retryAfterSuffix(response, credentials);
 
     if (response.ok) {
       const providerId = responseDataId(bodyText);
