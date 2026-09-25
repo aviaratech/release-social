@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
-import { createReleasePlan, type CanonicalReleaseSource, type ReleaseSocialConfig, type RenderedDestinationPlan } from '../index.js';
+import {
+  createReleasePlan,
+  type CanonicalReleaseSource,
+  type ReleaseSocialConfig,
+  type RenderedDestinationPlan,
+} from '../index.js';
 import { GitHubExecutionQuiescenceVerifier, GitHubStateStore } from '../github/state-store.js';
 import { bindProvider } from '../publishing/repository.js';
 import {
@@ -72,7 +77,7 @@ function contentDiagnostics(plan: RenderedDestinationPlan): string[] {
 function contentSource(plan: RenderedDestinationPlan): string {
   if (plan.textSource.kind === 'github_release_notes') return 'github-release-notes';
   if (plan.textSource.kind === 'provider_override') return 'provider-override';
-  return `${plan.textSource.kind.replaceAll('_', '-') }:${plan.textSource.variant}`;
+  return `${plan.textSource.kind.replaceAll('_', '-')}:${plan.textSource.variant}`;
 }
 
 export function prepareRelease(source: CanonicalReleaseSource, config: ReleaseSocialConfig | unknown): PreparedRelease {
@@ -167,7 +172,11 @@ export async function initializePublishingState(
   githubToken: string,
   fetcher?: typeof fetch,
 ): Promise<void> {
-  await new GitHubStateStore({ repository, token: githubToken, ...(fetcher === undefined ? {} : { fetch: fetcher }) }).initialize();
+  await new GitHubStateStore({
+    repository,
+    token: githubToken,
+    ...(fetcher === undefined ? {} : { fetch: fetcher }),
+  }).initialize();
 }
 
 export interface ReconcileRequest {
@@ -186,11 +195,13 @@ export interface ReconcileRequest {
 }
 
 export async function reconcileAttempt(request: ReconcileRequest): Promise<void> {
-  const state = request.state ?? new GitHubStateStore({
-    repository: request.repository,
-    token: request.githubToken,
-    ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
-  });
+  const state =
+    request.state ??
+    new GitHubStateStore({
+      repository: request.repository,
+      token: request.githubToken,
+      ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
+    });
   const verifier =
     request.verifier ??
     new GitHubExecutionQuiescenceVerifier({
@@ -237,11 +248,13 @@ export interface ReviseRequest {
 }
 
 export async function reviseAttempt(request: ReviseRequest): Promise<void> {
-  const state = request.state ?? new GitHubStateStore({
-    repository: request.repository,
-    token: request.githubToken,
-    ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
-  });
+  const state =
+    request.state ??
+    new GitHubStateStore({
+      repository: request.repository,
+      token: request.githubToken,
+      ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
+    });
   const ledger = await state.read();
   const located = locateAttempt(ledger, request.recordKey, request.attemptNumber, request.attemptId);
   if (located.attempt.payloadDigest !== request.oldDigest) {

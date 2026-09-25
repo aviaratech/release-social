@@ -54,10 +54,7 @@ export class GitHubReleaseReader {
   async read(request: GitHubReleaseRequest): Promise<CanonicalReleaseSource> {
     const { owner, name } = repositoryParts(request.repository);
     const repository = await this.getJson(`/repos/${owner}/${name}`, 'repository');
-    const release = await this.getJson(
-      `/repos/${owner}/${name}/releases/${request.releaseId}`,
-      'release',
-    );
+    const release = await this.getJson(`/repos/${owner}/${name}/releases/${request.releaseId}`, 'release');
 
     const repositoryId = requiredInteger(repository.id, 'repository ID');
     const fullName = requiredString(repository.full_name, 'repository full_name');
@@ -66,7 +63,8 @@ export class GitHubReleaseReader {
     }
 
     const releaseId = requiredInteger(release.id, 'release ID');
-    if (releaseId !== request.releaseId) throw new Error('GitHub release identity did not match the requested release ID.');
+    if (releaseId !== request.releaseId)
+      throw new Error('GitHub release identity did not match the requested release ID.');
 
     const body = release.body;
     if (body !== null && typeof body !== 'string') throw new Error('GitHub returned invalid release body.');

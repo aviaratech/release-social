@@ -7,10 +7,7 @@ import {
   reconcileAttempt,
   reviseAttempt,
 } from '../../src/cli/application.js';
-import {
-  findRecordForPlan,
-  recordKeyForPlan,
-} from '../../src/publishing/ledger.js';
+import { findRecordForPlan, recordKeyForPlan } from '../../src/publishing/ledger.js';
 import {
   createPlans,
   FakeProvider,
@@ -34,9 +31,7 @@ function config(destinations: 'x' | 'linkedin' | 'both', missingAuthored?: 'gith
     ...(missingAuthored === undefined ? {} : { content: { missingAuthored } }),
     destinations: {
       ...(destinations === 'linkedin' ? {} : { x: { accountId: X_ACCOUNT_ID } }),
-      ...(destinations === 'x'
-        ? {}
-        : { linkedin: { author: LINKEDIN_AUTHOR, apiVersion: '202609' } }),
+      ...(destinations === 'x' ? {} : { linkedin: { author: LINKEDIN_AUTHOR, apiVersion: '202609' } }),
     },
   };
 }

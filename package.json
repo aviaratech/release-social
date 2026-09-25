@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/aviaratech/release-social.git"
   },
+  "bin": {
+    "release-social": "./dist/cli/bin.js"
+  },
   "files": [
     "dist",
     "action-dist",
@@ -61,19 +64,16 @@
     "@types/node": "^25.9.1",
     "@types/oauth": "0.9.6",
     "@types/twitter-text": "3.1.10",
+    "esbuild": "0.28.2",
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2003",
     "typescript": "6.0.2",
-    "vitest": "5.0.1",
-    "esbuild": "0.28.2"
+    "vitest": "5.0.1"
   },
   "engines": {
     "node": ">=24.21.0 <25",
     "npm": "11.19.0"
   },
-  "packageManager": "npm@11.19.0",
-  "bin": {
-    "release-social": "./dist/cli/bin.js"
-  }
+  "packageManager": "npm@11.19.0"
 }

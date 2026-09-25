@@ -22,8 +22,7 @@ export function entrySource(body: string, overrides: Partial<CanonicalReleaseSou
 
 export function githubReleaseFetch(source: CanonicalReleaseSource): typeof fetch {
   return async (input) => {
-    const url =
-      typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
 
     if (url === `https://api.github.com/repos/${source.repository}`) {
       return Response.json({
@@ -50,11 +49,9 @@ export function githubReleaseFetch(source: CanonicalReleaseSource): typeof fetch
 }
 
 export function generatedBody(extra = ''): string {
-  return [
-    "## What's Changed",
-    '* Ship synthetic entrypoint support.',
-    '* Keep release text inert: ' + extra,
-  ].join('\n');
+  return ["## What's Changed", '* Ship synthetic entrypoint support.', '* Keep release text inert: ' + extra].join(
+    '\n',
+  );
 }
 
 export function xConfig(): object {

@@ -5,7 +5,14 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { runAction } from '../../src/action/run.js';
-import { ENTRY_RELEASE_ID, ENTRY_REPOSITORY, entrySource, generatedBody, githubReleaseFetch, xConfig } from './helpers.js';
+import {
+  ENTRY_RELEASE_ID,
+  ENTRY_REPOSITORY,
+  entrySource,
+  generatedBody,
+  githubReleaseFetch,
+  xConfig,
+} from './helpers.js';
 
 const ORIGINAL_ENV = { ...process.env };
 const ORIGINAL_FETCH = globalThis.fetch;

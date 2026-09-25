@@ -5,7 +5,14 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { runCli } from '../../src/cli/run.js';
-import { ENTRY_RELEASE_ID, ENTRY_REPOSITORY, entrySource, generatedBody, githubReleaseFetch, xConfig } from './helpers.js';
+import {
+  ENTRY_RELEASE_ID,
+  ENTRY_REPOSITORY,
+  entrySource,
+  generatedBody,
+  githubReleaseFetch,
+  xConfig,
+} from './helpers.js';
 
 function io(env: NodeJS.ProcessEnv = { GH_TOKEN: 'synthetic-github-token' }) {
   const stdout: string[] = [];
@@ -39,15 +46,7 @@ describe('CLI entrypoint', () => {
     const source = entrySource(generatedBody('safe'));
     const output = io({ GH_TOKEN: 'synthetic-github-token' });
     const exit = await runCli(
-      [
-        'preview',
-        '--repository',
-        ENTRY_REPOSITORY,
-        '--release-id',
-        String(ENTRY_RELEASE_ID),
-        '--config',
-        configPath,
-      ],
+      ['preview', '--repository', ENTRY_REPOSITORY, '--release-id', String(ENTRY_RELEASE_ID), '--config', configPath],
       output.value,
       { fetch: githubReleaseFetch(source) },
     );
@@ -74,15 +73,7 @@ describe('CLI entrypoint', () => {
     );
     const output = io({ GH_TOKEN: 'synthetic-github-token' });
     const exit = await runCli(
-      [
-        'preview',
-        '--repository',
-        ENTRY_REPOSITORY,
-        '--release-id',
-        String(ENTRY_RELEASE_ID),
-        '--config',
-        configPath,
-      ],
+      ['preview', '--repository', ENTRY_REPOSITORY, '--release-id', String(ENTRY_RELEASE_ID), '--config', configPath],
       output.value,
       { fetch: githubReleaseFetch(entrySource(generatedBody())) },
     );
@@ -100,15 +91,7 @@ describe('CLI entrypoint', () => {
 
     const output = io({ GH_TOKEN: 'synthetic-github-token', X_API_SECRET: 'MUST_NOT_LEAK' });
     const exit = await runCli(
-      [
-        'preview',
-        '--repository',
-        ENTRY_REPOSITORY,
-        '--release-id',
-        String(ENTRY_RELEASE_ID),
-        '--config',
-        configPath,
-      ],
+      ['preview', '--repository', ENTRY_REPOSITORY, '--release-id', String(ENTRY_RELEASE_ID), '--config', configPath],
       output.value,
       { fetch: githubReleaseFetch(entrySource(generatedBody(payload))) },
     );
