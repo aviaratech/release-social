@@ -67,6 +67,8 @@ export function createPlans(
     xText?: string;
     linkedInText?: string;
     linkedInVersion?: string;
+    xAccountId?: string;
+    linkedInAuthor?: string;
     includeX?: boolean;
     includeLinkedIn?: boolean;
   } = {},
