@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { createCliExecutionIdentity, findRecordForPlan, recordKeyForPlan } from '../../src/publishing/ledger.js';
+import {
+  appendPendingAttempt,
+  createCliExecutionIdentity,
+  createTransitionId,
+  findRecordForPlan,
+  recordKeyForPlan,
+} from '../../src/publishing/ledger.js';
 import { publishRelease } from '../../src/publishing/publisher.js';
 import {
   attemptLocator,
