@@ -96,7 +96,7 @@ function parseLinkedIn(value: unknown): LinkedInDestinationConfig {
 
 export function parseReleaseSocialConfig(input: unknown): ReleaseSocialConfig {
   const root = assertRecord(input, '$');
-  assertExactKeys(root, ['version', 'content', 'destinations'], '
+  assertExactKeys(root, ['version', 'content', 'destinations'], '$');
 
   if (root.version !== 1) {
     validationError('unsupported_config_version', '$.version', 'must be 1');
@@ -115,23 +115,4 @@ export function parseReleaseSocialConfig(input: unknown): ReleaseSocialConfig {
 
   const content = root.content === undefined ? undefined : parseContent(root.content);
   return content === undefined ? { version: 1, destinations: parsed } : { version: 1, content, destinations: parsed };
-}
-);
-
-  if (root.version !== 1) {
-    validationError('unsupported_config_version', '$.version', 'must be 1');
-  }
-
-  const destinations = assertRecord(root.destinations, '$.destinations');
-  assertExactKeys(destinations, ['x', 'linkedin'], '$.destinations');
-
-  if (Object.keys(destinations).length === 0) {
-    validationError('empty_destinations', '$.destinations', 'must configure x and/or linkedin');
-  }
-
-  const parsed: ReleaseSocialConfig['destinations'] = {};
-  if ('x' in destinations) parsed.x = parseX(destinations.x);
-  if ('linkedin' in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin);
-
-  return { version: 1, destinations: parsed };
 }
