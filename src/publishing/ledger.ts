@@ -12,6 +12,7 @@ import {
   type PublicExecutionIdentity,
   type PublishingAttempt,
   type PublishingLedgerV1,
+  type StateTransitionKind,
   type StateTransitionMetadata,
   type TerminalState,
 } from './types.js';
@@ -20,6 +21,14 @@ const DIGEST_PATTERN = /^[0-9a-f]{64}$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const REPOSITORY_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const MAX_TRANSITIONS = 100_000;
+const TRANSITION_KINDS: readonly StateTransitionKind[] = [
+  'append_pending',
+  'record_published',
+  'record_rejected',
+  'reconcile_published',
+  'reconcile_non_creation',
+  'revise_plan',
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -306,7 +315,11 @@ function validateTransition(value: unknown, index: number): LedgerTransition {
 
   const id = requireString(record.id, `${path}.id`, 128);
   if (!UUID_PATTERN.test(id)) fail(`${path}.id must be a UUID.`);
-  const kind = requireString(record.kind, `${path}.kind`, 64);
+  const kindValue = requireString(record.kind, `${path}.kind`, 64);
+  if (!TRANSITION_KINDS.includes(kindValue as StateTransitionKind)) {
+    fail(`${path}.kind is unsupported.`);
+  }
+  const kind = kindValue as StateTransitionKind;
   const at = requireTimestamp(record.at, `${path}.at`);
   const transition: LedgerTransition = { id, kind, at };
 
@@ -361,6 +374,91 @@ export function createEmptyLedger(): PublishingLedgerV1 {
   });
 }
 
+
+function validateTransitionHistory(
+  records: Record<string, DestinationRecord>,
+  transitions: readonly LedgerTransition[],
+): void {
+  const indexed = transitions.map((transition, index) => ({ transition, index }));
+
+  for (const { transition } of indexed) {
+    if (transition.recordKey === undefined || transition.attemptId === undefined) {
+      fail('Every publishing transition must reference an exact record and attempt.');
+    }
+    const record = records[transition.recordKey];
+    if (record === undefined) fail('Publishing transition references a missing record.');
+    if (!record.attempts.some((attempt) => attempt.attemptId === transition.attemptId)) {
+      fail('Publishing transition references a missing attempt.');
+    }
+  }
+
+  for (const [key, record] of Object.entries(records)) {
+    for (const attempt of record.attempts) {
+      const attemptTransitions = indexed.filter(
+        ({ transition }) => transition.recordKey === key && transition.attemptId === attempt.attemptId,
+      );
+      const pending = attemptTransitions.filter(({ transition }) => transition.kind === 'append_pending');
+      if (pending.length !== 1) {
+        fail('Every publishing attempt must have exactly one append_pending transition.');
+      }
+      const pendingIndex = pending[0]?.index;
+      if (pendingIndex === undefined) fail('Publishing attempt is missing its pending transition.');
+
+      const terminalTransitions = attemptTransitions.filter(({ transition }) =>
+        ['record_published', 'record_rejected', 'reconcile_published', 'reconcile_non_creation'].includes(
+          transition.kind,
+        ),
+      );
+
+      if (attempt.state === 'pending') {
+        if (terminalTransitions.length !== 0) {
+          fail('Pending publishing attempts cannot have terminal transitions.');
+        }
+      } else {
+        const terminal = attempt.terminal;
+        if (terminal === undefined) fail('Terminal publishing attempt is missing terminal metadata.');
+
+        const expectedKind: StateTransitionKind =
+          terminal.kind === 'published'
+            ? terminal.resolution === 'provider'
+              ? 'record_published'
+              : 'reconcile_published'
+            : terminal.resolution === 'provider'
+              ? 'record_rejected'
+              : 'reconcile_non_creation';
+
+        if (
+          terminalTransitions.length !== 1 ||
+          terminalTransitions[0]?.transition.kind !== expectedKind ||
+          terminalTransitions[0].index <= pendingIndex
+        ) {
+          fail('Publishing attempt terminal transition history is inconsistent with its terminal state.');
+        }
+      }
+
+      const revision = record.revisions.find(
+        (item) => item.fromAttemptNumber === attempt.attemptNumber,
+      );
+      const revisionTransitions = attemptTransitions.filter(
+        ({ transition }) => transition.kind === 'revise_plan',
+      );
+      if (revision === undefined) {
+        if (revisionTransitions.length !== 0) {
+          fail('Publishing transition history contains an unbound plan revision.');
+        }
+      } else {
+        if (revisionTransitions.length !== 1) {
+          fail('Every plan revision must have exactly one revise_plan transition.');
+        }
+        const terminalIndex = terminalTransitions[0]?.index;
+        if (terminalIndex === undefined || revisionTransitions[0]!.index <= terminalIndex) {
+          fail('Plan revision transition must follow the rejected terminal transition.');
+        }
+      }
+    }
+  }
+}
+
 export function validateLedger(value: unknown): PublishingLedgerV1 {
   const root = requireRecord(value, '$');
   requireExactKeys(root, ['schemaVersion', 'implementationId', 'records', 'transitions', 'checksum'], '$');
@@ -387,19 +485,9 @@ export function validateLedger(value: unknown): PublishingLedgerV1 {
     if (transitionIds.has(transition.id)) fail('$.transitions contains a duplicate transition id.');
     transitionIds.add(transition.id);
 
-    if (transition.recordKey !== undefined) {
-      const record = records[transition.recordKey];
-      if (record === undefined) fail('$.transitions references a missing publishing record.');
-      if (
-        transition.attemptId !== undefined &&
-        !record.attempts.some((attempt) => attempt.attemptId === transition.attemptId)
-      ) {
-        fail('$.transitions references a missing publishing attempt.');
-      }
-    } else if (transition.attemptId !== undefined) {
-      fail('$.transitions cannot reference an attempt without its record key.');
-    }
   }
+
+  validateTransitionHistory(records, transitions);
 
   const checksum = requireDigest(root.checksum, '$.checksum');
   const ledger = {
@@ -425,7 +513,7 @@ export function appendTransition(ledger: PublishingLedgerV1, metadata: StateTran
   }
   const transition: LedgerTransition = {
     id: metadata.id,
-    kind: metadata.kind.slice(0, 64),
+    kind: metadata.kind,
     at: metadata.at,
   };
   if (metadata.recordKey !== undefined) transition.recordKey = metadata.recordKey;
