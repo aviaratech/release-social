@@ -4,11 +4,17 @@ export interface ValidationIssue {
   message: string;
 }
 
+function isValidationIssueArray(
+  value: ValidationIssue | readonly ValidationIssue[],
+): value is readonly ValidationIssue[] {
+  return Array.isArray(value);
+}
+
 export class ReleaseSocialValidationError extends Error {
   readonly issues: readonly ValidationIssue[];
 
   constructor(issue: ValidationIssue | readonly ValidationIssue[]) {
-    const issues = Array.isArray(issue) ? issue : [issue];
+    const issues = isValidationIssueArray(issue) ? issue : [issue];
     super(issues.map((item) => `${item.path}: ${item.message}`).join('; '));
     this.name = 'ReleaseSocialValidationError';
     this.issues = issues;
