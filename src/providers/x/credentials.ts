@@ -5,12 +5,7 @@ export interface XCredentials {
   accessTokenSecret: string;
 }
 
-export const X_CREDENTIAL_ENV_NAMES = [
-  'X_API_KEY',
-  'X_API_SECRET',
-  'X_ACCESS_TOKEN',
-  'X_ACCESS_TOKEN_SECRET',
-] as const;
+export const X_CREDENTIAL_ENV_NAMES = ['X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_TOKEN_SECRET'] as const;
 
 export function loadXCredentials(env: NodeJS.ProcessEnv = process.env): XCredentials {
   const apiKey = env.X_API_KEY;
