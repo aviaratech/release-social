@@ -3,7 +3,6 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 
 import { GitHubExecutionQuiescenceVerifier, GitHubStateStore } from '../../src/github/state-store.js';
-import { PublishingError } from '../../src/publishing/errors.js';
 import {
   appendPendingAttempt,
   appendTransition,
