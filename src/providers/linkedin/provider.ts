@@ -9,17 +9,8 @@ import type {
   RenderedDestinationPlan,
 } from '../../core/types.js';
 import { validateLinkedInCredentials, type LinkedInCredentials } from './credentials.js';
-import {
-  fetchLinkedInWithTimeout,
-  linkedInHeaders,
-  LINKEDIN_POSTS_URL,
-  type LinkedInFetch,
-} from './http.js';
-import {
-  escapeLinkedInCommentary,
-  linkedInCharacterLength,
-  LINKEDIN_COMMENTARY_MAX_CHARACTERS,
-} from './text.js';
+import { fetchLinkedInWithTimeout, linkedInHeaders, LINKEDIN_POSTS_URL, type LinkedInFetch } from './http.js';
+import { escapeLinkedInCommentary, linkedInCharacterLength, LINKEDIN_COMMENTARY_MAX_CHARACTERS } from './text.js';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_DIAGNOSTIC_LENGTH = 320;
@@ -91,10 +82,7 @@ function rejected(reason: string, retryClassification: 'retryable' | 'permanent'
   return { status: 'rejected', reason, retryClassification };
 }
 
-function preflightRejected(
-  reason: string,
-  retryClassification: 'retryable' | 'permanent',
-): ProviderPreflightResult {
+function preflightRejected(reason: string, retryClassification: 'retryable' | 'permanent'): ProviderPreflightResult {
   return { status: 'rejected', reason, retryClassification };
 }
 
@@ -129,9 +117,7 @@ function postUrl(postUrn: string): string {
   return `https://www.linkedin.com/feed/update/${postUrn}`;
 }
 
-export class LinkedInProvider
-  implements ReleaseSocialProvider<LinkedInCredentials, LinkedInPreparedPayload>
-{
+export class LinkedInProvider implements ReleaseSocialProvider<LinkedInCredentials, LinkedInPreparedPayload> {
   readonly destination = 'linkedin' as const;
 
   private readonly fetcher: LinkedInFetch;
@@ -179,10 +165,7 @@ export class LinkedInProvider
 
     const sourceLength = linkedInCharacterLength(payload.text);
     const encodedLength = linkedInCharacterLength(payload.commentary);
-    if (
-      sourceLength > LINKEDIN_COMMENTARY_MAX_CHARACTERS ||
-      encodedLength > LINKEDIN_COMMENTARY_MAX_CHARACTERS
-    ) {
+    if (sourceLength > LINKEDIN_COMMENTARY_MAX_CHARACTERS || encodedLength > LINKEDIN_COMMENTARY_MAX_CHARACTERS) {
       errors.push(
         `LinkedIn commentary exceeds the supported ${LINKEDIN_COMMENTARY_MAX_CHARACTERS}-character maximum after literal-text encoding.`,
       );
@@ -212,10 +195,7 @@ export class LinkedInProvider
     return { status: 'ready' };
   }
 
-  async publish(
-    credentials: LinkedInCredentials,
-    payload: LinkedInPreparedPayload,
-  ): Promise<PublicationResult> {
+  async publish(credentials: LinkedInCredentials, payload: LinkedInPreparedPayload): Promise<PublicationResult> {
     const validation = this.validate(payload);
     if (!validation.ok) {
       return rejected(`Invalid LinkedIn payload: ${validation.errors.join(' ')}`, 'permanent');
@@ -283,7 +263,11 @@ export class LinkedInProvider
 
     if (response.status === 429) {
       return rejected(
-        statusReason('LinkedIn create request was rate limited without confirmed creation', response.status, retryAfter),
+        statusReason(
+          'LinkedIn create request was rate limited without confirmed creation',
+          response.status,
+          retryAfter,
+        ),
         'retryable',
       );
     }

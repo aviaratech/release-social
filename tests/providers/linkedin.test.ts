@@ -196,9 +196,7 @@ describe('LinkedIn provider validation and preparation', () => {
     expect(payload.author).toBe(AUTHOR);
     expect(payload.apiVersion).toBe(API_VERSION);
     expect(payload.text).toBe(`LinkedIn #1 (stable) *literal*.\n\n${RELEASE_URL}`);
-    expect(payload.commentary).toBe(
-      `LinkedIn \\#1 \\(stable\\) \\*literal\\*.\n\n${RELEASE_URL}`,
-    );
+    expect(payload.commentary).toBe(`LinkedIn \\#1 \\(stable\\) \\*literal\\*.\n\n${RELEASE_URL}`);
     expect(payload.planDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(provider.validate(payload)).toEqual({ ok: true });
     expect(mock.calls).toHaveLength(0);
@@ -241,9 +239,7 @@ describe('LinkedIn preflight', () => {
   it('rejects empty access tokens and invalid person/version configuration before publication', async () => {
     const provider = createLinkedInProvider();
 
-    const missingToken = requirePreflightRejected(
-      await provider.preflight({ accessToken: '' }, preparedText('valid')),
-    );
+    const missingToken = requirePreflightRejected(await provider.preflight({ accessToken: '' }, preparedText('valid')));
     expect(missingToken.retryClassification).toBe('permanent');
 
     const invalidAuthor = { ...preparedText('valid'), author: 'urn:li:organization:123' };
