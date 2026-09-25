@@ -13,6 +13,7 @@ import {
   reconcilePublishedAttempt,
   reviseRejectedAttemptPlan,
   type BoundProvider,
+  type ExecutionQuiescenceVerifier,
   type PublicExecutionIdentity,
   type PublishingStateRepository,
 } from '../publishing/index.js';
@@ -180,18 +181,22 @@ export interface ReconcileRequest {
   url?: string;
   cliSettled?: boolean;
   fetch?: typeof fetch;
+  state?: PublishingStateRepository;
+  verifier?: ExecutionQuiescenceVerifier;
 }
 
 export async function reconcileAttempt(request: ReconcileRequest): Promise<void> {
-  const state = new GitHubStateStore({
+  const state = request.state ?? new GitHubStateStore({
     repository: request.repository,
     token: request.githubToken,
     ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
   });
-  const verifier = new GitHubExecutionQuiescenceVerifier({
-    token: request.githubToken,
-    ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
-  });
+  const verifier =
+    request.verifier ??
+    new GitHubExecutionQuiescenceVerifier({
+      token: request.githubToken,
+      ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
+    });
   const attempt = attemptLocator(request.recordKey, request.attemptNumber, request.attemptId);
   const cliAttestation = request.cliSettled ? { processStoppedAndRequestsSettled: true as const } : undefined;
 
@@ -228,10 +233,11 @@ export interface ReviseRequest {
   newPlan: RenderedDestinationPlan;
   execution: PublicExecutionIdentity;
   fetch?: typeof fetch;
+  state?: PublishingStateRepository;
 }
 
 export async function reviseAttempt(request: ReviseRequest): Promise<void> {
-  const state = new GitHubStateStore({
+  const state = request.state ?? new GitHubStateStore({
     repository: request.repository,
     token: request.githubToken,
     ...(request.fetch === undefined ? {} : { fetch: request.fetch }),
