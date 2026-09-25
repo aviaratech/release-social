@@ -500,9 +500,9 @@ describe('GitHubStateStore', () => {
     const extraSha = gitBlobSha(extraContent);
     api3.blobs.set(extraSha, extraContent);
     api3.extraTreeEntry = { path: 'unexpected.txt', mode: '100644', type: 'blob', sha: extraSha };
-    await expect(
-      appendXAttempt(state3, '40000000-0000-4000-8000-00000000000d'),
-    ).rejects.toMatchObject({ code: 'state_uncertain' });
+    await expect(appendXAttempt(state3, '40000000-0000-4000-8000-00000000000d')).rejects.toMatchObject({
+      code: 'state_uncertain',
+    });
     await expect(state3.read()).rejects.toMatchObject({ code: 'state_corrupt' });
 
     const api4 = new FakeGitHubGitApi();
