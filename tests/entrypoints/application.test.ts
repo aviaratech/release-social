@@ -52,6 +52,22 @@ describe('shared entrypoint application', () => {
     }
   });
 
+  it('keeps empty and oversized generated-note fallback inside provider-pure budgets', () => {
+    const empty = prepareRelease(releaseSource(''), config('both'));
+    expect(empty.status).toBe('ready');
+    expect(empty.destinations.every((item) => item.validation.ok)).toBe(true);
+    expect(empty.destinations.every((item) => item.diagnostics.includes('omission_reason=empty_body'))).toBe(true);
+
+    const oversized = prepareRelease(
+      releaseSource(["## What's Changed", '* Short useful change.', '* ' + '#'.repeat(5000)].join('\n')),
+      config('both'),
+    );
+    expect(oversized.status).toBe('ready');
+    expect(oversized.destinations.every((item) => item.validation.ok)).toBe(true);
+    expect(oversized.destinations.every((item) => item.diagnostics.includes('omission_reason=budget'))).toBe(true);
+    expect(oversized.destinations.every((item) => item.text.endsWith('\n\n' + releaseSource('').releaseUrl))).toBe(true);
+  });
+
   it('surfaces missing-authored fallback/error/skip, malformed authored notes, and ineligible releases', () => {
     expect(prepareRelease(releaseSource(GENERATED), config('x')).status).toBe('ready');
     expect(() => prepareRelease(releaseSource(GENERATED), config('x', 'error'))).toThrow();
