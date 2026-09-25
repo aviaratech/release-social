@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 
 import { parseReleaseSocialConfig } from './config.js';
 import { validationError } from './errors.js';
-import { parseReleaseNotes } from './release-notes.js';
+import { renderGitHubReleaseNotesFallback } from './fallback.js';
+import { inspectReleaseNotesContent, parseReleaseNotes } from './release-notes.js';
 import { getSourceSkipReason, sourceIdentity, validateCanonicalSource } from './source.js';
 import {
   DESTINATIONS,
@@ -121,6 +122,27 @@ function digestFor(plan: Omit<RenderedDestinationPlan, 'digest'>): string {
   return createHash('sha256').update(JSON.stringify(canonical), 'utf8').digest('hex');
 }
 
+function renderFallbackDestination(
+  destination: Destination,
+  config: ReleaseSocialConfig,
+  source: ReturnType<typeof validateCanonicalSource>,
+): RenderedDestinationPlan {
+  const selection = renderGitHubReleaseNotesFallback(destination, source);
+  const prose = selection.prose.replace(/\r\n?/g, '\n').trim();
+  assertNoExternalLink(prose, `$.releaseNotes.fallback.${destination}`);
+  const text = `${prose}\n\n${source.releaseUrl}`;
+
+  const planWithoutDigest: Omit<RenderedDestinationPlan, 'digest'> = {
+    version: 1,
+    destination,
+    account: accountIdentity(destination, config),
+    textSource: selection.textSource,
+    text,
+    source: sourceIdentity(source),
+  };
+  return { ...planWithoutDigest, digest: digestFor(planWithoutDigest) };
+}
+
 function renderDestination(
   destination: Destination,
   config: ReleaseSocialConfig,
@@ -148,6 +170,29 @@ export function createReleasePlan(sourceInput: unknown, configInput: unknown): R
   const source = validateCanonicalSource(sourceInput);
   const sourceSkip = getSourceSkipReason(source);
   if (sourceSkip !== undefined) return { status: 'skipped', reason: sourceSkip };
+
+  const contentState = inspectReleaseNotesContent(source.body);
+  if (contentState === 'skip') return { status: 'skipped', reason: 'announcement_opt_out' };
+
+  if (contentState === 'missing') {
+    const mode = config.content?.missingAuthored ?? 'github-release-notes';
+    if (mode === 'error') {
+      validationError(
+        'authored_content_missing',
+        '$.releaseNotes',
+        'authored release-social sections are absent and content.missingAuthored is set to error',
+      );
+    }
+    if (mode === 'skip') return { status: 'skipped', reason: 'authored_content_missing' };
+
+    const fallbackPlans: RenderedDestinationPlan[] = [];
+    for (const destination of DESTINATIONS) {
+      if (config.destinations[destination] !== undefined) {
+        fallbackPlans.push(renderFallbackDestination(destination, config, source));
+      }
+    }
+    return { status: 'ready', plans: fallbackPlans };
+  }
 
   const notes = parseReleaseNotes(source.body);
   if (notes.skip) return { status: 'skipped', reason: 'announcement_opt_out' };
@@ -183,7 +228,7 @@ function parseTextSource(input: unknown): TextSource {
     validationError(
       'invalid_text_source',
       '$.plan.textSource',
-      'must describe provider_override, configured_variant, or provider_default',
+      'must describe an authored or github_release_notes text source',
     );
   }
   if (input.kind === 'provider_override') {
@@ -196,6 +241,41 @@ function parseTextSource(input: unknown): TextSource {
       validationError('invalid_text_source', '$.plan.textSource.variant', 'must be short or announcement');
     }
     return { kind: input.kind, variant: input.variant };
+  }
+  if (input.kind === 'github_release_notes') {
+    exactKeys(
+      input,
+      ['kind', 'contentDigest', 'includedEntries', 'omittedEntries', 'omissionReason'],
+      '$.plan.textSource',
+    );
+    if (typeof input.contentDigest !== 'string' || !/^[0-9a-f]{64}$/.test(input.contentDigest)) {
+      validationError('invalid_text_source', '$.plan.textSource.contentDigest', 'must be a lowercase SHA-256 digest');
+    }
+    if (
+      typeof input.includedEntries !== 'number' ||
+      !Number.isSafeInteger(input.includedEntries) ||
+      input.includedEntries < 0 ||
+      typeof input.omittedEntries !== 'number' ||
+      !Number.isSafeInteger(input.omittedEntries) ||
+      input.omittedEntries < 0
+    ) {
+      validationError('invalid_text_source', '$.plan.textSource', 'entry counts must be non-negative safe integers');
+    }
+    if (
+      input.omissionReason !== 'none' &&
+      input.omissionReason !== 'empty_body' &&
+      input.omissionReason !== 'no_useful_content' &&
+      input.omissionReason !== 'budget'
+    ) {
+      validationError('invalid_text_source', '$.plan.textSource.omissionReason', 'contains an unsupported reason');
+    }
+    return {
+      kind: 'github_release_notes',
+      contentDigest: input.contentDigest,
+      includedEntries: input.includedEntries,
+      omittedEntries: input.omittedEntries,
+      omissionReason: input.omissionReason,
+    };
   }
   validationError('invalid_text_source', '$.plan.textSource.kind', 'contains an unsupported text source');
 }
