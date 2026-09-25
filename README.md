@@ -17,7 +17,8 @@ implemented or published yet.
 - Consumer-owned credentials and durable per-destination publishing outcomes.
 - A shared TypeScript package, CLI, and GitHub Action.
 
-Implementation work is tracked in the [v0.1 milestone](https://github.com/aviaratech/release-social/milestone/1).
+Implementation work is tracked in [issue #1](https://github.com/aviaratech/release-social/issues/1)
+and the [v0.1 milestone](https://github.com/aviaratech/release-social/milestone/1).
 
 ## License
 
