@@ -386,6 +386,19 @@ export function validateLedger(value: unknown): PublishingLedgerV1 {
   for (const transition of transitions) {
     if (transitionIds.has(transition.id)) fail('$.transitions contains a duplicate transition id.');
     transitionIds.add(transition.id);
+
+    if (transition.recordKey !== undefined) {
+      const record = records[transition.recordKey];
+      if (record === undefined) fail('$.transitions references a missing publishing record.');
+      if (
+        transition.attemptId !== undefined &&
+        !record.attempts.some((attempt) => attempt.attemptId === transition.attemptId)
+      ) {
+        fail('$.transitions references a missing publishing attempt.');
+      }
+    } else if (transition.attemptId !== undefined) {
+      fail('$.transitions cannot reference an attempt without its record key.');
+    }
   }
 
   const checksum = requireDigest(root.checksum, '$.checksum');
@@ -475,7 +488,14 @@ export function findRecordForPlan(
 ): DestinationRecord | undefined {
   const plan = validateRenderedPlan(planInput);
   assertNoAccountConflict(ledger, plan);
-  return ledger.records[recordKeyForPlan(plan)];
+  const record = ledger.records[recordKeyForPlan(plan)];
+  if (record !== undefined && record.repository !== plan.source.repository) {
+    throw new PublishingError(
+      'record_identity_conflict',
+      'The publishing record repository identity does not match the validated source repository.',
+    );
+  }
+  return record;
 }
 
 export function assertNoAccountConflict(ledger: PublishingLedgerV1, planInput: RenderedDestinationPlan): void {
