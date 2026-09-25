@@ -14,6 +14,7 @@
   "files": [
     "dist",
     "templates",
+    "docs",
     "README.md",
     "CONTRIBUTING.md",
     "LICENSE"
@@ -25,6 +26,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./providers/x": {
+      "types": "./dist/providers/x/index.d.ts",
+      "default": "./dist/providers/x/index.js"
     }
   },
   "publishConfig": {
@@ -39,8 +44,14 @@
     "test": "vitest run",
     "checks": "npm run format:check && npm run lint && npm run typecheck && npm test"
   },
+  "dependencies": {
+    "oauth": "0.10.2",
+    "twitter-text": "3.1.0"
+  },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "@types/oauth": "0.9.6",
+    "@types/twitter-text": "3.1.10",
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2003",

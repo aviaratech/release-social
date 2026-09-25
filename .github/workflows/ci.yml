@@ -28,4 +28,5 @@ jobs:
           npm run checks
           npm run build
           npm test -- --run tests/core
+          npm test -- --run tests/providers/x.test.ts
           npm pack --dry-run
