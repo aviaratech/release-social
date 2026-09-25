@@ -61,9 +61,12 @@ function requestUrl(input: FetchInput): string {
   return input.url;
 }
 
-function jsonResponse(status: number, body: unknown, headers: HeadersInit = {}): Response {
-  const responseHeaders = new Headers(headers);
+function jsonResponse(status: number, body: unknown, headers: Readonly<Record<string, string>> = {}): Response {
+  const responseHeaders = new Headers();
   responseHeaders.set('content-type', 'application/json');
+  for (const [name, value] of Object.entries(headers)) {
+    responseHeaders.set(name, value);
+  }
   return new Response(JSON.stringify(body), { status, headers: responseHeaders });
 }
 
