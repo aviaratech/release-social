@@ -46,7 +46,7 @@ export interface PreparedRelease {
 
 export interface PublishApplicationOptions {
   source: CanonicalReleaseSource;
-  config: ReleaseSocialConfig | unknown;
+  config: unknown;
   repository: string;
   githubToken: string;
   execution: PublicExecutionIdentity;
@@ -80,7 +80,7 @@ function contentSource(plan: RenderedDestinationPlan): string {
   return `${plan.textSource.kind.replaceAll('_', '-')}:${plan.textSource.variant}`;
 }
 
-export function prepareRelease(source: CanonicalReleaseSource, config: ReleaseSocialConfig | unknown): PreparedRelease {
+export function prepareRelease(source: CanonicalReleaseSource, config: unknown): PreparedRelease {
   const planned = createReleasePlan(source, config);
   if (planned.status === 'skipped') {
     return { status: 'skipped', skipReason: planned.reason, destinations: [], plans: [] };
