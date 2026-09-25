@@ -26,13 +26,7 @@ describe('separate-process interruption and resume', () => {
         attemptId,
       },
       (current) => {
-        const appended = appendPendingAttempt(
-          current,
-          plan,
-          execution,
-          attemptId,
-          fixedClock().now(),
-        );
+        const appended = appendPendingAttempt(current, plan, execution, attemptId, fixedClock().now());
         return { next: appended.ledger, value: undefined };
       },
     );
