@@ -429,7 +429,7 @@ export function createAttemptId(): string {
   return randomUUID();
 }
 
-export function createCliExecutionIdentity(invocationId = randomUUID()): PublicExecutionIdentity {
+export function createCliExecutionIdentity(invocationId: string = randomUUID()): PublicExecutionIdentity {
   return { kind: 'cli', invocationId };
 }
 
@@ -620,7 +620,10 @@ export function requireOwnedPendingAttempt(
   execution: PublicExecutionIdentity,
 ): PublishingAttempt {
   const record = ledger.records[recordKeyValue];
-  const attempt = record?.attempts[attemptNumber - 1];
+  if (record === undefined) {
+    throw new PublishingError('attempt_not_found', 'The publishing record was not found.');
+  }
+  const attempt = record.attempts[attemptNumber - 1];
   if (attempt === undefined || attempt.attemptId !== attemptId) {
     throw new PublishingError('attempt_not_found', 'The exact publishing attempt was not found.');
   }
