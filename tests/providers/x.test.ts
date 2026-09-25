@@ -371,6 +371,22 @@ describe('X publication', () => {
     expect(result.reason.length).toBeLessThanOrEqual(500);
   });
 
+  it('binds successful preflight approval to the exact prepared payload', async () => {
+    const mock = createMockFetch(() => identitySuccess());
+    const provider = createXProvider({ fetch: mock.fetcher });
+    const payload = provider.prepare(xPlan());
+    await preflightReady(provider, payload);
+
+    const editedPayload: XPreparedPayload = {
+      ...payload,
+      text: payload.text.replace('publishing is ready', 'publishing was edited'),
+    };
+
+    const result = requirePublicationRejected(await provider.publish(CREDENTIALS, editedPayload));
+    expect(result.reason).toContain('requires a successful live preflight');
+    expect(mock.calls.filter((call) => requestUrl(call.input) === X_CREATE_POST_URL)).toHaveLength(0);
+  });
+
   it('consumes preflight approval before the POST so one publish call can issue at most one create request', async () => {
     const mock = createMockFetch(
       () => identitySuccess(),
