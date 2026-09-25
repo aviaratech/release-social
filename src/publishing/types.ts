@@ -93,9 +93,17 @@ export interface PublishingLedgerV1 {
   checksum: string;
 }
 
+export type StateTransitionKind =
+  | 'append_pending'
+  | 'record_published'
+  | 'record_rejected'
+  | 'reconcile_published'
+  | 'reconcile_non_creation'
+  | 'revise_plan';
+
 export interface StateTransitionMetadata {
   id: string;
-  kind: string;
+  kind: StateTransitionKind;
   at: string;
   recordKey?: string;
   attemptId?: string;
