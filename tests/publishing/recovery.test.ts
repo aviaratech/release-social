@@ -10,6 +10,48 @@ import {
 import { createPlans, FakeProvider, FakeQuiescenceVerifier, fixedClock, MemoryStateRepository } from './helpers.js';
 
 describe('separate-process interruption and resume', () => {
+  it('treats a process death immediately after the pending checkpoint as uncertain on resume', async () => {
+    const state = new MemoryStateRepository();
+    const [plan] = createPlans({ includeX: false });
+    if (plan === undefined) throw new Error('Missing LinkedIn plan.');
+
+    const execution = createCliExecutionIdentity('10000000-0000-4000-8000-000000000010');
+    const attemptId = '10000000-0000-4000-8000-000000000011';
+    await state.transition(
+      {
+        id: createTransitionId(),
+        kind: 'append_pending',
+        at: fixedClock().now(),
+        recordKey: recordKeyForPlan(plan),
+        attemptId,
+      },
+      (current) => {
+        const appended = appendPendingAttempt(
+          current,
+          plan,
+          execution,
+          attemptId,
+          fixedClock().now(),
+        );
+        return { next: appended.ledger, value: undefined };
+      },
+    );
+
+    // Simulate a new process: the original execution vanished before any provider POST.
+    const provider = new FakeProvider({ destination: 'linkedin' });
+    const resumed = await publishRelease({
+      plans: [plan],
+      providers: [provider],
+      state,
+      execution: createCliExecutionIdentity('10000000-0000-4000-8000-000000000012'),
+      ...fixedClock(),
+    });
+
+    expect(resumed.results[0]?.status).toBe('unknown');
+    expect(provider.preflightCount).toBe(0);
+    expect(provider.publishCount).toBe(0);
+  });
+
   it('skips success, stops on uncertain interruption, reconciles quiescent non-creation, and matches uninterrupted logical results', async () => {
     const state = new MemoryStateRepository();
     const plans = createPlans();
