@@ -53,7 +53,7 @@ describe('packaged entrypoints', () => {
 
     if (built) {
       const cli = await runNode(['dist/cli/bin.js', '--help']);
-      expect(cli.code).toBe(0);
+      if (cli.code !== 0) throw new Error(`Built CLI failed: ${cli.stderr}`);
       expect(cli.stdout).toContain('release-social commands:');
       expect(cli.stdout).toContain('publish');
     }
