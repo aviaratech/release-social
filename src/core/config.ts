@@ -1,10 +1,5 @@
 import { validationError } from './errors.js';
-import type {
-  LinkedInDestinationConfig,
-  ReleaseSocialConfig,
-  TextVariant,
-  XDestinationConfig,
-} from './types.js';
+import type { LinkedInDestinationConfig, ReleaseSocialConfig, TextVariant, XDestinationConfig } from './types.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -38,7 +33,11 @@ function parseX(value: unknown): XDestinationConfig {
   assertExactKeys(record, ['accountId', 'text'], '$.destinations.x');
 
   if (typeof record.accountId !== 'string' || !/^\d+$/.test(record.accountId)) {
-    validationError('invalid_x_account_id', '$.destinations.x.accountId', 'must be a numeric user ID encoded as a string');
+    validationError(
+      'invalid_x_account_id',
+      '$.destinations.x.accountId',
+      'must be a numeric user ID encoded as a string',
+    );
   }
 
   const text = parseTextVariant(record.text, '$.destinations.x.text');
@@ -66,9 +65,7 @@ function parseLinkedIn(value: unknown): LinkedInDestinationConfig {
 
   const apiVersion = parseApiVersion(record.apiVersion);
   const text = parseTextVariant(record.text, '$.destinations.linkedin.text');
-  return text === undefined
-    ? { author: record.author, apiVersion }
-    : { author: record.author, apiVersion, text };
+  return text === undefined ? { author: record.author, apiVersion } : { author: record.author, apiVersion, text };
 }
 
 export function parseReleaseSocialConfig(input: unknown): ReleaseSocialConfig {
