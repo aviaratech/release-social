@@ -79,7 +79,7 @@ export interface DestinationRecord {
 
 export interface LedgerTransition {
   id: string;
-  kind: string;
+  kind: StateTransitionKind;
   at: string;
   recordKey?: string;
   attemptId?: string;
