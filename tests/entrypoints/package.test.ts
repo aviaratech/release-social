@@ -3,7 +3,10 @@ import { spawn } from 'node:child_process';
 
 import { describe, expect, it } from 'vitest';
 
-function runNode(args: readonly string[], env: NodeJS.ProcessEnv = process.env): Promise<{
+function runNode(
+  args: readonly string[],
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<{
   code: number | null;
   stdout: string;
   stderr: string;

@@ -65,7 +65,9 @@ describe('shared entrypoint application', () => {
     expect(oversized.status).toBe('ready');
     expect(oversized.destinations.every((item) => item.validation.ok)).toBe(true);
     expect(oversized.destinations.every((item) => item.diagnostics.includes('omission_reason=budget'))).toBe(true);
-    expect(oversized.destinations.every((item) => item.text.endsWith('\n\n' + releaseSource('').releaseUrl))).toBe(true);
+    expect(oversized.destinations.every((item) => item.text.endsWith('\n\n' + releaseSource('').releaseUrl))).toBe(
+      true,
+    );
   });
 
   it('surfaces missing-authored fallback/error/skip, malformed authored notes, and ineligible releases', () => {
