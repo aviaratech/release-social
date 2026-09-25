@@ -173,7 +173,6 @@ function repositoryParts(repository: string): { owner: string; name: string } {
 }
 
 export class GitHubStateStore implements PublishingStateRepository {
-  private readonly repository: string;
   private readonly token: string;
   private readonly fetcher: typeof fetch;
   private readonly maxConflictRetries: number;
@@ -183,7 +182,6 @@ export class GitHubStateStore implements PublishingStateRepository {
   constructor(options: GitHubStateStoreOptions) {
     const { owner, name } = repositoryParts(options.repository);
     if (options.token.trim() === '') throw new Error('GitHub state-store token must not be empty.');
-    this.repository = options.repository;
     this.owner = owner;
     this.name = name;
     this.token = options.token;
