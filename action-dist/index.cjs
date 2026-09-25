@@ -7614,6 +7614,7 @@ var import_node_crypto = require("node:crypto");
 
 // src/core/platform-text.ts
 var import_twitter_text = __toESM(require_dist2(), 1);
+var { parseTweet } = import_twitter_text.default;
 var X_MAX_WEIGHTED_LENGTH = 280;
 var LINKEDIN_COMMENTARY_MAX_CHARACTERS = 3e3;
 var LINKEDIN_RESERVED_CHARACTERS = /* @__PURE__ */ new Set([
@@ -7634,7 +7635,7 @@ var LINKEDIN_RESERVED_CHARACTERS = /* @__PURE__ */ new Set([
   "~"
 ]);
 function measureXText(value) {
-  const parsed = (0, import_twitter_text.parseTweet)(value);
+  const parsed = parseTweet(value);
   return {
     valid: parsed.valid && parsed.weightedLength <= X_MAX_WEIGHTED_LENGTH,
     weightedLength: parsed.weightedLength
