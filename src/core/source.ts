@@ -62,12 +62,20 @@ function validateReleaseUrl(repository: string, tag: string, value: unknown): st
     url.search !== '' ||
     url.hash !== ''
   ) {
-    validationError('invalid_release_url', '$.source.releaseUrl', 'must be an https://github.com release URL without credentials, query, or fragment');
+    validationError(
+      'invalid_release_url',
+      '$.source.releaseUrl',
+      'must be an https://github.com release URL without credentials, query, or fragment',
+    );
   }
 
   const prefix = `/${repository}/releases/tag/`;
   if (!url.pathname.startsWith(prefix)) {
-    validationError('release_url_mismatch', '$.source.releaseUrl', 'must belong to the source repository and use /releases/tag/<tag>');
+    validationError(
+      'release_url_mismatch',
+      '$.source.releaseUrl',
+      'must belong to the source repository and use /releases/tag/<tag>',
+    );
   }
 
   const encodedTag = url.pathname.slice(prefix.length);
