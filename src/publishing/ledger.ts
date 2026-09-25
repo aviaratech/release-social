@@ -436,9 +436,7 @@ function validateTransitionHistory(
       }
 
       const revision = record.revisions.find((item) => item.fromAttemptNumber === attempt.attemptNumber);
-      const revisionTransitions = attemptTransitions.filter(
-        ({ transition }) => transition.kind === 'revise_plan',
-      );
+      const revisionTransitions = attemptTransitions.filter(({ transition }) => transition.kind === 'revise_plan');
       if (revision === undefined) {
         if (revisionTransitions.length !== 0) {
           fail('Publishing transition history contains an unbound plan revision.');
