@@ -133,6 +133,34 @@ function sectionContent(
     .trim();
 }
 
+export type ReleaseNotesContentState = 'authored' | 'missing' | 'skip';
+
+export function inspectReleaseNotesContent(input: string): ReleaseNotesContentState {
+  const text = normalizeLineEndings(input);
+  if (!/<!--\s*(?:release-social:|announcement:|social:)/.test(text)) return 'missing';
+
+  const fences = getFenceRanges(text);
+  const comments = scanComments(text);
+  const reserved = comments.filter((comment) => isReservedComment(comment.raw));
+
+  for (const comment of reserved) {
+    if (isInside(comment.start, fences)) {
+      validationError(
+        'marker_in_fence',
+        '$.releaseNotes',
+        'reserved release-social markers are not allowed inside fenced code',
+      );
+    }
+  }
+
+  const skipCount = reserved.filter((comment) => comment.raw === SKIP_MARKER).length;
+  if (skipCount > 1) {
+    validationError('duplicate_skip_marker', '$.releaseNotes', 'must not contain more than one social:skip marker');
+  }
+  if (reserved.length === 1 && skipCount === 1) return 'skip';
+  return 'authored';
+}
+
 export function parseReleaseNotes(input: string): ParsedReleaseNotes {
   const text = normalizeLineEndings(input);
   if (!text.startsWith(VERSION_MARKER)) {
