@@ -1,10 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import {
-  createReleasePlan,
-  type CanonicalReleaseSource,
-  type RenderedDestinationPlan,
-} from '../index.js';
+import { createReleasePlan, type CanonicalReleaseSource, type RenderedDestinationPlan } from '../index.js';
 import { GitHubExecutionQuiescenceVerifier, GitHubStateStore } from '../github/state-store.js';
 import { bindProvider } from '../publishing/repository.js';
 import {
