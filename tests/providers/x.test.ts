@@ -203,9 +203,7 @@ describe('X provider validation and preparation', () => {
       accessTokenSecret: 'token-secret',
     });
 
-    expect(() => loadXCredentials({ X_API_KEY: 'key' })).toThrow(
-      'X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET',
-    );
+    expect(() => loadXCredentials({ X_API_KEY: 'key' })).toThrow('X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET');
   });
 });
 
@@ -253,9 +251,7 @@ describe('X live preflight', () => {
       jsonResponse(503, { title: 'Temporarily unavailable' }, { 'retry-after': '20' }),
     );
     const unavailableProvider = createXProvider({ fetch: unavailableMock.fetcher });
-    const unavailableResult = requirePreflightRejected(
-      await unavailableProvider.preflight(CREDENTIALS, payload),
-    );
+    const unavailableResult = requirePreflightRejected(await unavailableProvider.preflight(CREDENTIALS, payload));
     expect(unavailableResult.retryClassification).toBe('retryable');
     expect(unavailableResult.reason).toContain('Retry-After: 20');
   });
