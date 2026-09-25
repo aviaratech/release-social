@@ -23,7 +23,7 @@ Rendering precedence is provider-specific release-note override, then an explici
 - [`templates/release-notes.md`](templates/release-notes.md) is the release-note starting point.
 - [`templates/release-social.config.json`](templates/release-social.config.json) is a synthetic configuration example.
 
-The templates use fictional account identities and contain no credentials. Provider setup is documented in [`docs/providers/x.md`](docs/providers/x.md) and [`docs/providers/linkedin.md`](docs/providers/linkedin.md).
+The templates use fictional account identities and contain no credentials. Provider setup is documented in [`docs/providers/x.md`](docs/providers/x.md) and [`docs/providers/linkedin.md`](docs/providers/linkedin.md). Durable publication state and conservative recovery are documented in [`docs/publishing-state.md`](docs/publishing-state.md).
 
 ## Development
 
