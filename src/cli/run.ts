@@ -134,7 +134,10 @@ async function loadPrepared(args: ParsedArgs, io: CliIo, services: CliServices) 
   const repository = required(args, 'repository');
   const releaseId = integer(required(args, 'release-id'), 'release-id');
   const config = await readConfig(required(args, 'config'));
-  const source = await new GitHubReleaseReader({ token: githubToken(io), fetch: services.fetch }).read({
+  const source = await new GitHubReleaseReader({
+    token: githubToken(io),
+    ...(services.fetch === undefined ? {} : { fetch: services.fetch }),
+  }).read({
     repository,
     releaseId,
   });
@@ -184,7 +187,7 @@ export async function runCli(
         githubToken: githubToken(io),
         execution: cliExecution(),
         env: io.env,
-        fetch: services.fetch,
+        ...(services.fetch === undefined ? {} : { fetch: services.fetch }),
       });
       io.stdout(bounded(publicationOutput(result)));
       return result.aggregate === 'success' || result.aggregate === 'skipped' ? 0 : 1;
@@ -211,7 +214,7 @@ export async function runCli(
         ...(optional(args, 'provider-id') === undefined ? {} : { providerId: required(args, 'provider-id') }),
         ...(optional(args, 'url') === undefined ? {} : { url: required(args, 'url') }),
         cliSettled: args.flags.has('cli-settled'),
-        fetch: services.fetch,
+        ...(services.fetch === undefined ? {} : { fetch: services.fetch }),
       });
       io.stdout(bounded({ status: 'reconciled', resolution }));
       return 0;
@@ -234,7 +237,7 @@ export async function runCli(
         oldDigest: required(args, 'old-digest'),
         newPlan: plan,
         execution: cliExecution(),
-        fetch: services.fetch,
+        ...(services.fetch === undefined ? {} : { fetch: services.fetch }),
       });
       io.stdout(bounded({ status: 'revised', destination, digest: plan.digest }));
       return 0;
