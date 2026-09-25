@@ -14,9 +14,10 @@ The shared TypeScript core implements the versioned release-note/configuration c
 - Validates version-1 destination configuration for X and personal LinkedIn profiles without accepting secrets.
 - Accepts only canonical GitHub release source metadata and binds the final link to that source.
 - Produces deterministic per-destination plans and SHA-256 digests from canonical nonsecret plan inputs and exact final payload bytes.
-- Returns typed skips for draft, prerelease, non-public, and explicitly opted-out releases.
+- Returns typed skips for draft, prerelease, non-public, explicitly opted-out, and configured missing-authored releases.
+- When authored release-social sections are absent, `content.missingAuthored` defaults to `github-release-notes`; `error` and `skip` are explicit alternatives. Fallback uses only the already-published GitHub Release body, strips boilerplate/markup deterministically, fits whole entries to each provider's real text rules, and never generates new notes or calls an LLM.
 
-Rendering precedence is provider-specific release-note override, then an explicitly configured text variant, then the provider default. X defaults to `short`; LinkedIn defaults to `announcement`. Selected prose is line-ending normalized, boundary-trimmed without collapsing internal whitespace, and followed by exactly one canonical GitHub release URL.
+For valid authored notes, rendering precedence is provider-specific release-note override, then an explicitly configured text variant, then the provider default. X defaults to `short`; LinkedIn defaults to `announcement`. Selected prose is line-ending normalized, boundary-trimmed without collapsing internal whitespace, and followed by exactly one canonical GitHub release URL.
 
 ## Templates
 
