@@ -51,10 +51,15 @@ function bounded(value: unknown): string {
   return JSON.stringify({ error: 'output_truncated', preview: json.slice(0, MAX_OUTPUT) });
 }
 
+function outputValue(value: unknown): string {
+  if (typeof value === 'string') return value.replace(/[\r\n]+/g, ' ').slice(0, MAX_OUTPUT);
+  return bounded(value);
+}
+
 async function setOutput(name: string, value: unknown): Promise<void> {
   const outputPath = process.env.GITHUB_OUTPUT;
   if (!outputPath) return;
-  await appendFile(outputPath, `${name}=${bounded(value)}\n`, 'utf8');
+  await appendFile(outputPath, `${name}=${outputValue(value)}\n`, 'utf8');
 }
 
 function previewValue(prepared: ReturnType<typeof prepareRelease>): unknown {
