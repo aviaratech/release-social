@@ -1,0 +1,55 @@
+{
+  "name": "@aviaratech/release-social",
+  "version": "0.1.0",
+  "description": "Deterministic release-announcement contracts and planning for social publishing",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md",
+    "CONTRIBUTING.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aviaratech/release-social.git"
+  },
+  "homepage": "https://github.com/aviaratech/release-social#readme",
+  "bugs": {
+    "url": "https://github.com/aviaratech/release-social/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "format": "oxfmt src tests package.json tsconfig.json tsconfig.build.json vitest.config.ts .oxlintrc.json .oxfmtrc.json",
+    "format:check": "oxfmt --check src tests package.json tsconfig.json tsconfig.build.json vitest.config.ts .oxlintrc.json .oxfmtrc.json",
+    "lint": "oxlint src tests vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "checks": "npm run format:check && npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "oxfmt": "0.70.0",
+    "oxlint": "1.85.0",
+    "oxlint-tsgolint": "7.0.2003",
+    "typescript": "6.0.2",
+    "vitest": "5.0.1"
+  },
+  "engines": {
+    "node": ">=24.21.0 <25",
+    "npm": "11.19.0"
+  },
+  "packageManager": "npm@11.19.0"
+}
