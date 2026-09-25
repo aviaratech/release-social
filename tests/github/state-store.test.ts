@@ -440,6 +440,65 @@ describe('GitHubStateStore', () => {
     expect(final.records[recordKeyForPlan(linkedInPlan)]).toBeDefined();
   });
 
+  it('does not let a losing writer adopt a concurrent pending attempt for the same record', async () => {
+    const api = new FakeGitHubGitApi();
+    const state = store(api);
+    await state.initialize();
+
+    const [xPlan] = createPlans({ includeLinkedIn: false });
+    if (xPlan === undefined) throw new Error('Missing X plan.');
+
+    const competingAttemptId = '41000000-0000-4000-8000-000000000001';
+    api.beforeNextPatch = () => {
+      const current = api.currentLedger();
+      const appended = appendPendingAttempt(
+        current,
+        xPlan,
+        createCliExecutionIdentity('41000000-0000-4000-8000-000000000002'),
+        competingAttemptId,
+        fixedClock().now(),
+      );
+      api.advanceLedger(
+        appendTransition(appended.ledger, {
+          id: '41000000-0000-4000-8000-000000000003',
+          kind: 'append_pending',
+          at: fixedClock().now(),
+          recordKey: recordKeyForPlan(xPlan),
+          attemptId: competingAttemptId,
+        }),
+      );
+    };
+
+    const losingAttemptId = '41000000-0000-4000-8000-000000000004';
+    await expect(
+      state.transition(
+        {
+          id: '41000000-0000-4000-8000-000000000005',
+          kind: 'append_pending',
+          at: fixedClock().now(),
+          recordKey: recordKeyForPlan(xPlan),
+          attemptId: losingAttemptId,
+        },
+        (current) => {
+          const appended = appendPendingAttempt(
+            current,
+            xPlan,
+            createCliExecutionIdentity('41000000-0000-4000-8000-000000000006'),
+            losingAttemptId,
+            fixedClock().now(),
+          );
+          return { next: appended.ledger, value: undefined };
+        },
+      ),
+    ).rejects.toMatchObject({ code: 'attempt_unknown' });
+
+    const final = await state.read();
+    const attempts = final.records[recordKeyForPlan(xPlan)]?.attempts ?? [];
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0]?.attemptId).toBe(competingAttemptId);
+    expect(attempts.some((attempt) => attempt.attemptId === losingAttemptId)).toBe(false);
+  });
+
   it('recovers from a stale ref read through fast-forward conflict revalidation', async () => {
     const api = new FakeGitHubGitApi();
     const state = store(api);
