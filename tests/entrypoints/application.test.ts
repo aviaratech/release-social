@@ -52,6 +52,36 @@ describe('shared entrypoint application', () => {
     }
   });
 
+  it('uses the same resolved runtime identities for preview and publish', async () => {
+    const runtimeConfig = {
+      version: 1,
+      destinations: {
+        x: {},
+        linkedin: { apiVersion: '202609' },
+      },
+    };
+    const env = {
+      X_ACCOUNT_ID,
+      LINKEDIN_AUTHOR,
+    };
+    const source = releaseSource(GENERATED);
+    const preview = prepareRelease(source, runtimeConfig, env);
+    const published = await publishPrepared({
+      source,
+      config: runtimeConfig,
+      repository: REPOSITORY,
+      githubToken: 'synthetic',
+      execution: cliExecution('60000000-0000-4000-8000-000000000001'),
+      env,
+      state: new MemoryStateRepository(),
+      bindings: [new FakeProvider({ destination: 'x' }), new FakeProvider({ destination: 'linkedin' })],
+    });
+
+    expect(preview.status).toBe('ready');
+    expect(published.aggregate).toBe('success');
+    expect(published.prepared.plans).toEqual(preview.plans);
+  });
+
   it('keeps empty and oversized generated-note fallback inside provider-pure budgets', () => {
     const empty = prepareRelease(releaseSource(''), config('both'));
     expect(empty.status).toBe('ready');
