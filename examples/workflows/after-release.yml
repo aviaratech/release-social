@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: aviaratech/release-social@REPLACE_WITH_FULL_40_CHAR_COMMIT_SHA
+      - uses: aviaratech/release-social@v1
         with:
           mode: publish
           repository: ${{ github.repository }}
