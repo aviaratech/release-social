@@ -62,7 +62,7 @@ The dedicated `release-social-state` branch contains sanitized public attempt/ou
 - state initialization is explicit;
 - updates are non-force fast-forward transitions;
 - confirmed successes are preserved across reruns;
-- ambiguous external writes are not automatically retried;
+- Ambiguous external writes are not automatically retried;
 - history must not be deleted, reset, or force-rewritten as a recovery shortcut.
 
 ## Supply-chain posture
