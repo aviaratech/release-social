@@ -97,9 +97,42 @@ Social publication only reads that body.
 
 Omitted providers are disabled. Selecting zero destinations is an error.
 
+### Centralized account identities
+
+Consumers that publish many repositories through the same social accounts can omit the repeated account identity from checked-in destination configuration:
+
+~~~json
+{
+  "version": 1,
+  "destinations": {
+    "x": {},
+    "linkedin": {
+      "apiVersion": "202609"
+    }
+  }
+}
+~~~
+
+Supply the identities as non-secret runtime configuration:
+
+~~~text
+X_ACCOUNT_ID=123456789012345678
+LINKEDIN_AUTHOR=urn:li:person:FictionalMember123
+~~~
+
+For GitHub Actions, organization or repository variables are a convenient source:
+
+~~~yaml
+env:
+  X_ACCOUNT_ID: ${{ vars.X_ACCOUNT_ID }}
+  LINKEDIN_AUTHOR: ${{ vars.LINKEDIN_AUTHOR }}
+~~~
+
+A runtime identity never enables a destination by itself. Literal `accountId` / `author` values remain supported. If both a literal and runtime value are present for a selected destination, they must match exactly or validation fails. The resolved identity is included in preview and the canonical plan digest.
+
 ## 3. Consumer-owned credentials
 
-Credentials are never stored in public configuration or the public state branch.
+Credentials are never stored in public configuration or the public state branch. The non-secret `X_ACCOUNT_ID` and `LINKEDIN_AUTHOR` identity variables above are configuration, not credentials; preview/validate may use them without provider secrets.
 
 ### GitHub CLI credential
 
