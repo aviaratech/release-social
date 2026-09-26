@@ -22,7 +22,18 @@ Commands:
 - `reconcile`: exact-attempt reconciliation as either a confirmed public post or confirmed non-creation.
 - `revise`: bind an exact definitively rejected attempt's old digest to a newly validated plan so a later publish can retry.
 
-CLI GitHub access comes only from `GH_TOKEN`. Provider credentials use only the provider-defined environment variables:
+CLI GitHub access comes only from `GH_TOKEN`.
+
+Provider account identity can be supplied either literally in the checked-in destination config or through these non-secret runtime variables:
+
+```text
+X_ACCOUNT_ID
+LINKEDIN_AUTHOR
+```
+
+A runtime identity does not enable a destination by itself. If a configured destination supplies both a literal identity and its runtime variable, the values must match exactly. Resolution happens before plan construction, so preview, digests, publishing state, and provider binding all use one concrete account identity.
+
+Provider credentials use only the provider-defined environment variables:
 
 ```text
 X_API_KEY
@@ -32,7 +43,7 @@ X_ACCESS_TOKEN_SECRET
 LINKEDIN_ACCESS_TOKEN
 ```
 
-Preview/validate do not load provider credentials and do not call providers or write publishing state.
+Preview/validate can use the non-secret identity variables but do not load provider credentials, call providers, or write publishing state.
 
 Release text and configuration are parsed as data. The CLI does not interpolate release text into a shell command.
 
@@ -50,7 +61,15 @@ The Action accepts:
 
 The Action does not check out the release tag and never executes code from a release/tag merely to publish. It reads only the already-checked-out configuration file inside `GITHUB_WORKSPACE`, then reads the canonical release through the GitHub API.
 
-Do not use `pull_request_target` to expose social credentials to untrusted pull-request code.
+For centralized identities, map repository or organization variables explicitly:
+
+```yaml
+env:
+  X_ACCOUNT_ID: ${{ vars.X_ACCOUNT_ID }}
+  LINKEDIN_AUTHOR: ${{ vars.LINKEDIN_AUTHOR }}
+```
+
+Map provider secrets only into trusted live-publish jobs. Do not use `pull_request_target` to expose social credentials to untrusted pull-request code.
 
 ## Consumer workflow permissions
 
