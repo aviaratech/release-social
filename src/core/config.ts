@@ -71,19 +71,11 @@ function resolveXAccountId(configured: unknown, runtime: string | undefined): st
 
   const runtimeAccountId = normalizeRuntimeIdentity(runtime);
   if (runtimeAccountId !== undefined && !/^\d+$/.test(runtimeAccountId)) {
-    validationError(
-      'invalid_x_account_id',
-      '$.runtime.X_ACCOUNT_ID',
-      'must be a numeric user ID encoded as a string',
-    );
+    validationError('invalid_x_account_id', '$.runtime.X_ACCOUNT_ID', 'must be a numeric user ID encoded as a string');
   }
 
   if (typeof configured === 'string' && runtimeAccountId !== undefined && configured !== runtimeAccountId) {
-    validationError(
-      'conflicting_x_account_id',
-      '$.destinations.x.accountId',
-      'does not match runtime X_ACCOUNT_ID',
-    );
+    validationError('conflicting_x_account_id', '$.destinations.x.accountId', 'does not match runtime X_ACCOUNT_ID');
   }
 
   const accountId = typeof configured === 'string' ? configured : runtimeAccountId;
@@ -118,10 +110,7 @@ function parseApiVersion(value: unknown): string {
 }
 
 function resolveLinkedInAuthor(configured: unknown, runtime: string | undefined): string {
-  if (
-    configured !== undefined &&
-    (typeof configured !== 'string' || !/^urn:li:person:[^\s:]+$/.test(configured))
-  ) {
+  if (configured !== undefined && (typeof configured !== 'string' || !/^urn:li:person:[^\s:]+$/.test(configured))) {
     validationError('invalid_linkedin_author', '$.destinations.linkedin.author', 'must match urn:li:person:...');
   }
 
