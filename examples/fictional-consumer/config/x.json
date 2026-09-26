@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "content": {
+    "missingAuthored": "github-release-notes"
+  },
+  "destinations": {
+    "x": {
+      "accountId": "123456789012345678"
+    }
+  }
+}
