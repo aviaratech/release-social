@@ -1,6 +1,10 @@
-name: release-social
-description: Preview or publish validated GitHub release announcements to configured social destinations.
+name: Aviara Release Social
+description: Publish GitHub Releases to X and LinkedIn with preview-first, duplicate-resistant delivery.
 author: Aviara Tech
+
+branding:
+  icon: send
+  color: blue
 
 inputs:
   mode:
