@@ -50,7 +50,7 @@ function runNode(
   });
 }
 
-async function createFetchPreload(body: string): Promise<string> {
+async function createFetchPreload(): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), 'release-social-docs-action-preload-'));
   const path = join(directory, 'mock-fetch.mjs');
   const moduleText = [
@@ -183,7 +183,7 @@ describe('fictional consumer rehearsal', () => {
     const config = await readFile(join(ROOT, 'config/both.json'), 'utf8');
     const body = await readFile(join(ROOT, 'releases/generated.md'), 'utf8');
     await writeFile(join(workspace, 'release-social.json'), config, 'utf8');
-    const preload = await createFetchPreload(body);
+    const preload = await createFetchPreload();
 
     const env: NodeJS.ProcessEnv = {
       ...process.env,
