@@ -63,6 +63,46 @@ describe('CLI entrypoint', () => {
     expect(output.stderr).toEqual([]);
   });
 
+  it('resolves centralized X and LinkedIn identities during preview without provider secrets', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'release-social-cli-identities-'));
+    const configPath = join(directory, 'release-social.json');
+    await writeFile(
+      configPath,
+      JSON.stringify({
+        version: 1,
+        destinations: {
+          x: {},
+          linkedin: { apiVersion: '202609' },
+        },
+      }),
+      'utf8',
+    );
+
+    const source = entrySource(generatedBody('central identities'));
+    const output = io({
+      GH_TOKEN: 'synthetic-github-token',
+      X_ACCOUNT_ID: '123456789012345678',
+      LINKEDIN_AUTHOR: 'urn:li:person:FictionalPerson123',
+    });
+    const exit = await runCli(
+      ['preview', '--repository', ENTRY_REPOSITORY, '--release-id', String(ENTRY_RELEASE_ID), '--config', configPath],
+      output.value,
+      { fetch: githubReleaseFetch(source) },
+    );
+
+    expect(exit).toBe(0);
+    const result = JSON.parse(output.stdout.at(-1) ?? '{}') as {
+      destinations?: Array<{ destination: string; account: string }>;
+    };
+    expect(result.destinations).toEqual(
+      expect.arrayContaining([
+        { destination: 'x', account: '123456789012345678' },
+        { destination: 'linkedin', account: 'urn:li:person:FictionalPerson123' },
+      ]),
+    );
+    expect(output.stderr).toEqual([]);
+  });
+
   it('rejects invalid provider selection instead of silently skipping it', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'release-social-cli-invalid-'));
     const configPath = join(directory, 'release-social.json');
