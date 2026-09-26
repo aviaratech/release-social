@@ -34,8 +34,8 @@ jobs:
         with:
           persist-credentials: false
 
-      # Replace this placeholder with the full 40-character commit SHA reviewed by your repository.
-      - uses: aviaratech/release-social@REPLACE_WITH_FULL_40_CHAR_COMMIT_SHA
+      # Use @v1 for the latest backwards-compatible v1. Pin a full release SHA for maximum assurance.
+      - uses: aviaratech/release-social@v1
         with:
           mode: ${{ inputs.mode }}
           repository: ${{ github.repository }}
