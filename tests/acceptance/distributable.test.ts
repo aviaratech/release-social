@@ -250,8 +250,8 @@ async function publishAction(box: Sandbox): Promise<{ code: number | null; stdou
     GITHUB_RUN_ID: '7001',
     INPUT_MODE: 'publish',
     INPUT_REPOSITORY: REPOSITORY,
-    INPUT_RELEASE_ID: String(RELEASE_ID),
-    INPUT_CONFIG_PATH: 'release-social.json',
+    'INPUT_RELEASE-ID': String(RELEASE_ID),
+    'INPUT_CONFIG-PATH': 'release-social.json',
     INPUT_TOKEN: GH_TOKEN,
   });
 }

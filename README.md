@@ -34,7 +34,7 @@ For maximum supply-chain assurance, pin the full commit SHA of the reviewed rele
 - uses: aviaratech/release-social@FULL_40_CHARACTER_RELEASE_SHA
 ```
 
-The immutable GitHub Release tag `v1.0.0` identifies the exact first stable release. The separate `v1` compatibility tag tracks the latest backwards-compatible v1 release.
+The immutable GitHub Release tag `v1.0.1` identifies the corrected stable Action release. The original `v1.0.0` tag is preserved, but its Action input handling is defective; exact-version consumers should use `v1.0.1`. The separate `v1` compatibility tag tracks the latest backwards-compatible v1 release.
 
 ## Quick start
 
@@ -196,7 +196,7 @@ See [CLI and Action usage](docs/entrypoints.md).
 
 ## Security and trust
 
-- GitHub Release-specific versions such as `v1.0.0` are intended to be immutable.
+- GitHub Release-specific versions such as `v1.0.1` are intended to be immutable.
 - The movable `v1` tag is a compatibility alias and can advance to later backwards-compatible v1 releases.
 - Provider credentials are not written to publishing state.
 - PR/fork checks run without social credentials.

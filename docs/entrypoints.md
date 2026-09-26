@@ -49,7 +49,7 @@ Release text and configuration are parsed as data. The CLI does not interpolate 
 
 ## GitHub Action
 
-The repository ships a bundled Node 24 Action. For normal stable consumption, use the major compatibility tag `aviaratech/release-social@v1`. For exact versioning, use an immutable release tag such as `@v1.0.0`. For maximum supply-chain assurance, pin the full 40-character commit SHA of the reviewed release.
+The repository ships a bundled Node 24 Action. For normal stable consumption, use the major compatibility tag `aviaratech/release-social@v1`. For exact versioning, use an immutable release tag such as `@v1.0.1`. For maximum supply-chain assurance, pin the full 40-character commit SHA of the reviewed release.
 
 The Action accepts:
 

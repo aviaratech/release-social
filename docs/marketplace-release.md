@@ -2,11 +2,13 @@
 
 Aviara Release Social is distributed primarily as a GitHub Action. The canonical launch event is a GitHub Release published to GitHub Marketplace.
 
+`v1.0.0` is preserved at its original commit and contains an Action runner input defect. The corrected launch is `v1.0.1`; consumers pinned to `v1.0.0` should upgrade to `v1.0.1`, and the `v1` compatibility tag should point to the corrected release.
+
 ## v1 release model
 
 Use two references with different guarantees:
 
-- `v1.0.0` — release-specific tag attached to the immutable GitHub Release.
+- `v1.0.1` — release-specific tag attached to the immutable GitHub Release.
 - `v1` — separate movable compatibility tag pointing to the latest backwards-compatible v1 release commit.
 
 Do not create a GitHub Release for `v1` when immutable releases are enabled. Keep `v1` as a standalone compatibility tag so it can advance to later compatible v1 commits.
@@ -18,17 +20,17 @@ Consumer guidance:
 - uses: aviaratech/release-social@v1
 
 # Exact released version
-- uses: aviaratech/release-social@v1.0.0
+- uses: aviaratech/release-social@v1.0.1
 
 # Maximum pinning assurance
 - uses: aviaratech/release-social@FULL_40_CHARACTER_RELEASE_SHA
 ```
 
-## Before drafting v1.0.0
+## Before drafting v1.0.1
 
 1. Merge the reviewed Marketplace-readiness PR to `main`.
 2. Confirm post-merge CI is green.
-3. Confirm `package.json` and lockfile version are `1.0.0`.
+3. Confirm `package.json` and lockfile version are `1.0.1`.
 4. Confirm root `action.yml` reports:
    - `name: Aviara Release Social`
    - `author: Aviara Tech`
@@ -54,24 +56,24 @@ In the repository UI:
 6. Choose:
    - Primary category: **Publishing**
    - Secondary category: **Utilities**
-7. Create tag: `v1.0.0`.
+7. Create tag: `v1.0.1`.
 8. Target the exact reviewed `main` commit.
-9. Release title: **Aviara Release Social v1.0.0**.
-10. Start with GitHub's generated release notes if useful, then ensure the final release body accurately reflects the stable v1 product.
+9. Release title: **Aviara Release Social v1.0.1**.
+10. Start with GitHub's generated release notes if useful, then ensure the final release body accurately reflects the corrected stable v1 product and its `release-id` / `config-path` Action input fix.
 11. Publish the release with Marketplace enabled using the required 2FA flow.
 
 GitHub Marketplace publication is not complete until the Marketplace listing is visibly live.
 
-## Canonical v1.0.0 release body
+## Canonical v1.0.1 release body
 
 Use the following as the release body, preserving factual accuracy if any final launch detail changes.
 
-```md
-# Aviara Release Social v1.0.0
+````md
+# Aviara Release Social v1.0.1
 
 Publish GitHub Releases to X and LinkedIn—safely.
 
-v1.0.0 is the first stable GitHub Marketplace release of Aviara Release Social, built and maintained by Aviara Tech.
+v1.0.1 is the corrected stable GitHub Marketplace release of Aviara Release Social, built and maintained by Aviara Tech. It fixes GitHub Actions runner input lookup for `release-id` and `config-path`.
 
 ## Highlights
 
@@ -95,7 +97,7 @@ For the latest backwards-compatible v1 release:
 For an exact release:
 
 ```yaml
-- uses: aviaratech/release-social@v1.0.0
+- uses: aviaratech/release-social@v1.0.1
 ```
 
 For maximum pinning assurance, use the full 40-character commit SHA of this release.
@@ -105,7 +107,7 @@ For maximum pinning assurance, use the full 40-character commit SHA of this rele
 - X
 - Personal LinkedIn profiles
 
-LinkedIn organization pages and other social providers are not part of v1.0.0.
+LinkedIn organization pages and other social providers are not part of v1.0.1.
 
 ## Verification
 
@@ -115,21 +117,22 @@ Offline verification does not imply that a consumer's real X or LinkedIn account
 
 ## Upgrade notes
 
-This is the first stable v1 release. There is no prior stable major version to migrate from.
+Consumers pinned to `v1.0.0` should change that exact pin to `v1.0.1`. The `v1.0.0` release and tag remain at their original commit; `v1` is the movable compatibility tag for the latest backwards-compatible v1 release.
 
 ## Maintainer
 
 Built and maintained by [Aviara Tech](https://aviaratech.io).
-```
+````
 
 ## Create the v1 compatibility tag
 
-After the immutable `v1.0.0` GitHub Release exists:
+After the immutable `v1.0.1` GitHub Release exists:
 
-1. Resolve the exact commit SHA referenced by `v1.0.0`.
+1. Resolve the exact commit SHA referenced by `v1.0.1`.
 2. Create the separate `v1` tag at that same commit.
 3. Verify:
-   - `v1.0.0` remains tied to the immutable release;
+   - `v1.0.0` remains tied to its original immutable release and commit;
+   - `v1.0.1` remains tied to the corrected immutable release;
    - `v1` resolves to the same commit;
    - no GitHub Release exists for `v1`.
 
@@ -146,7 +149,7 @@ After publication:
    - Aviara Release Social
    - Aviara Tech
    - send/blue branding
-   - `v1.0.0` as the stable release
+   - `v1.0.1` as the stable release
 3. Use the Marketplace **Use latest version** / installation UI and verify the generated workflow syntax.
 4. In a clean fictional or dedicated test consumer, run:
    - preview with X only;
@@ -159,7 +162,7 @@ After publication:
 
 If a released version is defective:
 
-- do not mutate or replace the immutable `v1.0.0` release/tag;
+- do not mutate or replace either immutable release-specific tag;
 - fix the defect on a branch;
 - run the complete release gate;
 - publish a new semantic patch/minor GitHub Release;

@@ -10236,7 +10236,7 @@ function actionExecution(repository, runId) {
 // src/action/run.ts
 var MAX_OUTPUT = 12e3;
 function input(name, required = false) {
-  const envName = `INPUT_${name.replaceAll("-", "_").toUpperCase()}`;
+  const envName = `INPUT_${name.replaceAll(" ", "_").toUpperCase()}`;
   const value = process.env[envName]?.trim() ?? "";
   if (required && value === "") throw new Error(`Action input ${name} is required.`);
   return value;
