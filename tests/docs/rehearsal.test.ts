@@ -5,19 +5,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import {
-  cliExecution,
-  prepareRelease,
-  publishPrepared,
-  reconcileAttempt,
-} from '../../src/cli/application.js';
+import { cliExecution, prepareRelease, publishPrepared, reconcileAttempt } from '../../src/cli/application.js';
 import { recordKeyForPlan } from '../../src/publishing/ledger.js';
 import type { CanonicalReleaseSource } from '../../src/index.js';
-import {
-  FakeProvider,
-  FakeQuiescenceVerifier,
-  MemoryStateRepository,
-} from '../publishing/helpers.js';
+import { FakeProvider, FakeQuiescenceVerifier, MemoryStateRepository } from '../publishing/helpers.js';
 
 const ROOT = 'examples/fictional-consumer';
 const REPOSITORY = 'fictional/release-social-consumer';
@@ -63,27 +54,27 @@ async function createFetchPreload(body: string): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), 'release-social-docs-action-preload-'));
   const path = join(directory, 'mock-fetch.mjs');
   const moduleText = [
-    "const repository = process.env.MOCK_REPOSITORY;",
-    "const releaseId = Number(process.env.MOCK_RELEASE_ID);",
+    'const repository = process.env.MOCK_REPOSITORY;',
+    'const releaseId = Number(process.env.MOCK_RELEASE_ID);',
     "const body = Buffer.from(process.env.MOCK_RELEASE_BODY_B64 || '', 'base64').toString('utf8');",
-    "globalThis.fetch = async (input) => {",
+    'globalThis.fetch = async (input) => {',
     "  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;",
     "  if (url === 'https://api.github.com/repos/' + repository) {",
     "    return Response.json({ id: 424242, full_name: repository, private: false, visibility: 'public' });",
-    "  }",
+    '  }',
     "  if (url === 'https://api.github.com/repos/' + repository + '/releases/' + releaseId) {",
-    "    return Response.json({",
-    "      id: releaseId,",
+    '    return Response.json({',
+    '      id: releaseId,',
     "      tag_name: 'v1.2.3',",
     "      html_url: 'https://github.com/' + repository + '/releases/tag/v1.2.3',",
-    "      body,",
-    "      draft: false,",
-    "      prerelease: false,",
-    "    });",
-    "  }",
+    '      body,',
+    '      draft: false,',
+    '      prerelease: false,',
+    '    });',
+    '  }',
     "  throw new Error('Unexpected bundled Action request: ' + url);",
-    "};",
-    "",
+    '};',
+    '',
   ].join('\n');
   await writeFile(path, moduleText, 'utf8');
   return path;

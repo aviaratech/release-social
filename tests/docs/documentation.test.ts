@@ -6,14 +6,11 @@ import { runCli } from '../../src/cli/run.js';
 
 function cliHelp(): Promise<string> {
   const stdout: string[] = [];
-  return runCli(
-    ['--help'],
-    {
-      stdout: (value) => stdout.push(value),
-      stderr: () => undefined,
-      env: {},
-    },
-  ).then((exit) => {
+  return runCli(['--help'], {
+    stdout: (value) => stdout.push(value),
+    stderr: () => undefined,
+    env: {},
+  }).then((exit) => {
     if (exit !== 0) throw new Error('CLI help failed.');
     return stdout.join('\n');
   });
