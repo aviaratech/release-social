@@ -1,6 +1,6 @@
 {
   "name": "@aviaratech/release-social",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Publish GitHub Releases to X and LinkedIn with preview-first, duplicate-resistant delivery",
   "homepage": "https://github.com/aviaratech/release-social#readme",
   "bugs": {

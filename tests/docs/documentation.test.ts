@@ -143,8 +143,8 @@ describe('documentation contract', () => {
     const security = await readFile('SECURITY.md', 'utf8');
     const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as { version?: string };
 
-    expect(packageJson.version).toBe('1.0.0');
-    expect(checklist).toContain('v1.0.0');
+    expect(packageJson.version).toBe('1.0.1');
+    expect(checklist).toContain('v1.0.1');
     expect(checklist).toContain('immutable releases');
     expect(checklist).toContain('Publish this Action to the GitHub Marketplace');
     expect(checklist).toContain('Marketplace Developer Agreement');
@@ -154,7 +154,7 @@ describe('documentation contract', () => {
     expect(checklist).toContain('credential-free');
     expect(checklist).toContain('non-force fast-forward');
 
-    expect(marketplace).toContain('Aviara Release Social v1.0.0');
+    expect(marketplace).toContain('Aviara Release Social v1.0.1');
     expect(marketplace).toContain('Primary category: **Publishing**');
     expect(marketplace).toContain('Secondary category: **Utilities**');
     expect(marketplace).toContain('v1 compatibility tag');

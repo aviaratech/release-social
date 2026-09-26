@@ -7,7 +7,7 @@ import { actionExecution, prepareRelease, publishPrepared } from '../cli/applica
 const MAX_OUTPUT = 12_000;
 
 function input(name: string, required = false): string {
-  const envName = `INPUT_${name.replaceAll('-', '_').toUpperCase()}`;
+  const envName = `INPUT_${name.replaceAll(' ', '_').toUpperCase()}`;
   const value = process.env[envName]?.trim() ?? '';
   if (required && value === '') throw new Error(`Action input ${name} is required.`);
   return value;

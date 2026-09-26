@@ -2,12 +2,12 @@
 
 Use this checklist before publishing the first stable GitHub Marketplace release.
 
-The canonical release event is the GitHub Release tagged `v1.0.0`. The standalone `v1` tag is a movable compatibility alias and must not have its own GitHub Release when immutable releases are enabled.
+The canonical release event is the GitHub Release tagged `v1.0.1`. The standalone `v1` tag is a movable compatibility alias and must not have its own GitHub Release when immutable releases are enabled.
 
 ## Source and CI
 
 - [ ] The intended release commit on `main` is reviewed and immutable by SHA.
-- [ ] `package.json` and `package-lock.json` report version `1.0.0`.
+- [ ] `package.json` and `package-lock.json` report version `1.0.1`.
 - [ ] `npm ci` succeeds with 0 known vulnerabilities reported by npm audit during install.
 - [ ] `npm run checks` passes.
 - [ ] `npm run build` passes.
@@ -72,15 +72,15 @@ The canonical release event is the GitHub Release tagged `v1.0.0`. The standalon
 
 ## GitHub Release / Marketplace publication
 
-- [ ] Enable immutable releases for the repository before publishing `v1.0.0`.
+- [ ] Enable immutable releases for the repository before publishing `v1.0.1`.
 - [ ] Open root `action.yml` and use GitHub's **Draft a release** Marketplace flow.
 - [ ] Select **Publish this Action to the GitHub Marketplace**.
 - [ ] Aviara Tech organization owner accepts the Marketplace Developer Agreement if required.
 - [ ] Primary category: **Publishing**.
 - [ ] Secondary category: **Utilities**.
-- [ ] Tag: `v1.0.0`.
+- [ ] Tag: `v1.0.1`.
 - [ ] Target: exact reviewed release commit on `main`.
-- [ ] Title: **Aviara Release Social v1.0.0**.
+- [ ] Title: **Aviara Release Social v1.0.1**.
 - [ ] Final release body follows `docs/marketplace-release.md`.
 - [ ] Publish the release with Marketplace enabled using GitHub's required 2FA flow.
 - [ ] Verify the GitHub Release is marked immutable.
@@ -88,11 +88,11 @@ The canonical release event is the GitHub Release tagged `v1.0.0`. The standalon
 
 ## v1 compatibility tag
 
-After the immutable `v1.0.0` release exists:
+After the immutable `v1.0.1` release exists:
 
-- [ ] Resolve the exact commit SHA for `v1.0.0`.
+- [ ] Resolve the exact commit SHA for `v1.0.1`.
 - [ ] Create the separate `v1` tag at that same commit.
-- [ ] Verify `v1` and `v1.0.0` resolve to the same commit.
+- [ ] Verify `v1` and `v1.0.1` resolve to the same commit.
 - [ ] Verify no GitHub Release exists for `v1`.
 - [ ] Document that future backwards-compatible v1 releases move only the standalone `v1` tag after the new immutable release is established.
 
@@ -115,7 +115,7 @@ After the immutable `v1.0.0` release exists:
 
 ## Correction policy
 
-If `v1.0.0` is defective after publication:
+If `v1.0.1` is defective after publication:
 
 - [ ] Do not rewrite or replace the immutable release-specific tag.
 - [ ] Fix on a branch and rerun the complete release gate.
