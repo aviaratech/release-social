@@ -17,14 +17,16 @@ function cliHelp(): Promise<string> {
 }
 
 describe('documentation contract', () => {
-  it('keeps the README status, tracking, and outstanding-live-evidence boundary explicit', async () => {
+  it('keeps the README Marketplace-first and explicit about offline versus live evidence', async () => {
     const readme = await readFile('README.md', 'utf8');
-    expect(readme).toContain('X');
-    expect(readme).toContain('personal LinkedIn profiles');
-    expect(readme).toContain('https://github.com/aviaratech/release-social/issues/1');
-    expect(readme).toContain('https://github.com/aviaratech/release-social/milestone/1');
-    expect(readme).toContain('Live validation still outstanding');
-    expect(readme).toContain('does **not** publish npm');
+    expect(readme).toContain('Publish GitHub Releases to X and LinkedIn—safely.');
+    expect(readme).toContain('personal LinkedIn profile');
+    expect(readme).toContain('aviaratech/release-social@v1');
+    expect(readme).toContain('FULL_40_CHARACTER_RELEASE_SHA');
+    expect(readme).toContain('https://aviaratech.io');
+    expect(readme).toContain('Verification status');
+    expect(readme).toContain('Offline verification is not presented as proof of a live provider account connection');
+    expect(readme).toContain('Marketplace / v1 release runbook');
   });
 
   it('shows the exact checked-in authored template and canonical agent evidence rules', async () => {
@@ -80,6 +82,10 @@ describe('documentation contract', () => {
     const workflow = await readFile('examples/fictional-consumer/release-and-social.yml', 'utf8');
     const fixtureReadme = await readFile('examples/fictional-consumer/README.md', 'utf8');
 
+    expect(action).toContain('name: Aviara Release Social');
+    expect(action).toContain('author: Aviara Tech');
+    expect(action).toContain('icon: send');
+    expect(action).toContain('color: blue');
     expect(action).toContain('using: node24');
     for (const input of ['mode:', 'repository:', 'release-id:', 'config-path:', 'token:']) {
       expect(action).toContain(input);
@@ -131,13 +137,32 @@ describe('documentation contract', () => {
     expect(live).toContain('not performed by repository CI');
   });
 
-  it('records the initial release checklist without performing release mutations', async () => {
+  it('records the first-class Marketplace v1 release contract and security posture', async () => {
     const checklist = await readFile('docs/release-checklist.md', 'utf8');
-    expect(checklist).toContain('must not publish npm');
+    const marketplace = await readFile('docs/marketplace-release.md', 'utf8');
+    const security = await readFile('SECURITY.md', 'utf8');
+    const packageJson = JSON.parse(await readFile('package.json', 'utf8')) as { version?: string };
+
+    expect(packageJson.version).toBe('1.0.0');
+    expect(checklist).toContain('v1.0.0');
+    expect(checklist).toContain('immutable releases');
+    expect(checklist).toContain('Publish this Action to the GitHub Marketplace');
+    expect(checklist).toContain('Marketplace Developer Agreement');
     expect(checklist).toContain('npm run check:action-bundle');
     expect(checklist).toContain('npm pack --dry-run');
     expect(checklist).toContain('full 40-character commit SHA');
     expect(checklist).toContain('credential-free');
     expect(checklist).toContain('non-force fast-forward');
+
+    expect(marketplace).toContain('Aviara Release Social v1.0.0');
+    expect(marketplace).toContain('Primary category: **Publishing**');
+    expect(marketplace).toContain('Secondary category: **Utilities**');
+    expect(marketplace).toContain('v1 compatibility tag');
+    expect(marketplace).toContain('Built and maintained by [Aviara Tech](https://aviaratech.io)');
+
+    expect(security).toContain('Latest v1.x release');
+    expect(security).toContain('Do **not** include credentials');
+    expect(security).toContain('full 40-character commit SHA');
+    expect(security).toContain('Ambiguous external writes are not automatically retried');
   });
 });
