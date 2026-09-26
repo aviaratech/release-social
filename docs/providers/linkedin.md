@@ -17,6 +17,7 @@ Official references:
 
 - https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api
 - https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/little-text-format
+- https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin
 - https://learn.microsoft.com/en-us/linkedin/shared/authentication/getting-access
 - https://learn.microsoft.com/en-us/linkedin/shared/authentication/programmatic-refresh-tokens
 
