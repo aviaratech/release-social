@@ -122,9 +122,7 @@ function config(selection: Selection): object {
     version: 1,
     destinations: {
       ...(selection === 'linkedin' ? {} : { x: { accountId: X_ACCOUNT_ID } }),
-      ...(selection === 'x'
-        ? {}
-        : { linkedin: { author: LINKEDIN_AUTHOR, apiVersion: LINKEDIN_VERSION } }),
+      ...(selection === 'x' ? {} : { linkedin: { author: LINKEDIN_AUTHOR, apiVersion: LINKEDIN_VERSION } }),
     },
   };
 }
@@ -347,10 +345,7 @@ async function ledger(box: Sandbox): Promise<{
   };
 }
 
-function assertConfirmedState(
-  value: Awaited<ReturnType<typeof ledger>>,
-  selection: Selection,
-): void {
+function assertConfirmedState(value: Awaited<ReturnType<typeof ledger>>, selection: Selection): void {
   const records = Object.values(value.records);
   expect(records).toHaveLength(selection === 'both' ? 2 : 1);
   expect(records.every((record) => record.attempts.at(-1)?.state === 'published')).toBe(true);
@@ -397,8 +392,7 @@ describe.skipIf(!existsSync(BUILT_CLI))('distributable social publish acceptance
           );
           const firstCreateIndex = log.findIndex(
             (item) =>
-              (item.url === 'https://api.x.com/2/tweets' ||
-                item.url === 'https://api.linkedin.com/rest/posts') &&
+              (item.url === 'https://api.x.com/2/tweets' || item.url === 'https://api.linkedin.com/rest/posts') &&
               item.method === 'POST',
           );
           expect(xPreflightIndex).toBeGreaterThanOrEqual(0);

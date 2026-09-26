@@ -74,17 +74,16 @@ function authorizationFacts(headers, current) {
   const authorization = headers.get('authorization') ?? '';
   return {
     scheme: authorization.split(/\s+/, 1)[0] ?? '',
-    xOAuth:
-      authorization.startsWith('OAuth ')
-        ? {
-            hasConsumerKey: authorization.includes(`oauth_consumer_key="${current.x.apiKey}"`),
-            hasAccessToken: authorization.includes(`oauth_token="${current.x.accessToken}"`),
-            hasHmacSha1: authorization.includes('oauth_signature_method="HMAC-SHA1"'),
-            hasSignature: authorization.includes('oauth_signature='),
-            leaksApiSecret: authorization.includes(current.x.apiSecret),
-            leaksTokenSecret: authorization.includes(current.x.accessTokenSecret),
-          }
-        : undefined,
+    xOAuth: authorization.startsWith('OAuth ')
+      ? {
+          hasConsumerKey: authorization.includes(`oauth_consumer_key="${current.x.apiKey}"`),
+          hasAccessToken: authorization.includes(`oauth_token="${current.x.accessToken}"`),
+          hasHmacSha1: authorization.includes('oauth_signature_method="HMAC-SHA1"'),
+          hasSignature: authorization.includes('oauth_signature='),
+          leaksApiSecret: authorization.includes(current.x.apiSecret),
+          leaksTokenSecret: authorization.includes(current.x.accessTokenSecret),
+        }
+      : undefined,
     linkedInBearerMatches: authorization === `Bearer ${current.linkedin.accessToken}`,
   };
 }
