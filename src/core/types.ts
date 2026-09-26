@@ -11,6 +11,11 @@ export interface ReleaseContentConfig {
   missingAuthored?: MissingAuthoredMode;
 }
 
+export interface RuntimeProviderIdentities {
+  xAccountId?: string;
+  linkedinAuthor?: string;
+}
+
 export interface XDestinationConfig {
   accountId: string;
   text?: TextVariant;

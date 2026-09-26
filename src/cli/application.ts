@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
-import { createReleasePlan, type CanonicalReleaseSource, type RenderedDestinationPlan } from '../index.js';
+import {
+  createReleasePlan,
+  type CanonicalReleaseSource,
+  type RenderedDestinationPlan,
+  type RuntimeProviderIdentities,
+} from '../index.js';
 import { GitHubExecutionQuiescenceVerifier, GitHubStateStore } from '../github/state-store.js';
 import { bindProvider } from '../publishing/repository.js';
 import {
@@ -75,8 +80,19 @@ function contentSource(plan: RenderedDestinationPlan): string {
   return `${plan.textSource.kind.replaceAll('_', '-')}:${plan.textSource.variant}`;
 }
 
-export function prepareRelease(source: CanonicalReleaseSource, config: unknown): PreparedRelease {
-  const planned = createReleasePlan(source, config);
+function runtimeProviderIdentities(env: NodeJS.ProcessEnv): RuntimeProviderIdentities {
+  return {
+    ...(env.X_ACCOUNT_ID === undefined ? {} : { xAccountId: env.X_ACCOUNT_ID }),
+    ...(env.LINKEDIN_AUTHOR === undefined ? {} : { linkedinAuthor: env.LINKEDIN_AUTHOR }),
+  };
+}
+
+export function prepareRelease(
+  source: CanonicalReleaseSource,
+  config: unknown,
+  env: NodeJS.ProcessEnv = {},
+): PreparedRelease {
+  const planned = createReleasePlan(source, config, runtimeProviderIdentities(env));
   if (planned.status === 'skipped') {
     return { status: 'skipped', skipReason: planned.reason, destinations: [], plans: [] };
   }
@@ -115,14 +131,14 @@ export function prepareRelease(source: CanonicalReleaseSource, config: unknown):
 }
 
 export async function publishPrepared(options: PublishApplicationOptions): Promise<EntryResult> {
-  const prepared = prepareRelease(options.source, options.config);
+  const env = options.env ?? process.env;
+  const prepared = prepareRelease(options.source, options.config, env);
   if (prepared.status === 'skipped') return { aggregate: 'skipped', prepared };
 
   if (prepared.destinations.some((destination) => !destination.validation.ok)) {
     return { aggregate: 'failed', prepared };
   }
 
-  const env = options.env ?? process.env;
   const bindings =
     options.bindings ??
     prepared.plans.map((plan) => {

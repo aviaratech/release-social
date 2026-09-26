@@ -7326,18 +7326,41 @@ function parseContent(value) {
   const missingAuthored = parseMissingAuthored(record.missingAuthored);
   return missingAuthored === void 0 ? {} : { missingAuthored };
 }
-function parseX(value) {
-  const record = assertRecord(value, "$.destinations.x");
-  assertExactKeys(record, ["accountId", "text"], "$.destinations.x");
-  if (typeof record.accountId !== "string" || !/^\d+$/.test(record.accountId)) {
+function normalizeRuntimeIdentity(value) {
+  const normalized = value?.trim();
+  return normalized === "" ? void 0 : normalized;
+}
+function resolveXAccountId(configured, runtime) {
+  if (configured !== void 0 && (typeof configured !== "string" || !/^\d+$/.test(configured))) {
     validationError(
       "invalid_x_account_id",
       "$.destinations.x.accountId",
       "must be a numeric user ID encoded as a string"
     );
   }
+  const runtimeAccountId = normalizeRuntimeIdentity(runtime);
+  if (runtimeAccountId !== void 0 && !/^\d+$/.test(runtimeAccountId)) {
+    validationError("invalid_x_account_id", "$.runtime.X_ACCOUNT_ID", "must be a numeric user ID encoded as a string");
+  }
+  if (typeof configured === "string" && runtimeAccountId !== void 0 && configured !== runtimeAccountId) {
+    validationError("conflicting_x_account_id", "$.destinations.x.accountId", "does not match runtime X_ACCOUNT_ID");
+  }
+  const accountId = typeof configured === "string" ? configured : runtimeAccountId;
+  if (accountId === void 0) {
+    validationError(
+      "missing_x_account_id",
+      "$.destinations.x.accountId",
+      "must be configured directly or supplied through X_ACCOUNT_ID"
+    );
+  }
+  return accountId;
+}
+function parseX(value, runtimeAccountId) {
+  const record = assertRecord(value, "$.destinations.x");
+  assertExactKeys(record, ["accountId", "text"], "$.destinations.x");
+  const accountId = resolveXAccountId(record.accountId, runtimeAccountId);
   const text = parseTextVariant(record.text, "$.destinations.x.text");
-  return text === void 0 ? { accountId: record.accountId } : { accountId: record.accountId, text };
+  return text === void 0 ? { accountId } : { accountId, text };
 }
 function parseApiVersion(value) {
   if (typeof value !== "string" || !/^\d{6}$/.test(value)) {
@@ -7349,17 +7372,40 @@ function parseApiVersion(value) {
   }
   return value;
 }
-function parseLinkedIn(value) {
-  const record = assertRecord(value, "$.destinations.linkedin");
-  assertExactKeys(record, ["author", "apiVersion", "text"], "$.destinations.linkedin");
-  if (typeof record.author !== "string" || !/^urn:li:person:[^\s:]+$/.test(record.author)) {
+function resolveLinkedInAuthor(configured, runtime) {
+  if (configured !== void 0 && (typeof configured !== "string" || !/^urn:li:person:[^\s:]+$/.test(configured))) {
     validationError("invalid_linkedin_author", "$.destinations.linkedin.author", "must match urn:li:person:...");
   }
+  const runtimeAuthor = normalizeRuntimeIdentity(runtime);
+  if (runtimeAuthor !== void 0 && !/^urn:li:person:[^\s:]+$/.test(runtimeAuthor)) {
+    validationError("invalid_linkedin_author", "$.runtime.LINKEDIN_AUTHOR", "must match urn:li:person:...");
+  }
+  if (typeof configured === "string" && runtimeAuthor !== void 0 && configured !== runtimeAuthor) {
+    validationError(
+      "conflicting_linkedin_author",
+      "$.destinations.linkedin.author",
+      "does not match runtime LINKEDIN_AUTHOR"
+    );
+  }
+  const author = typeof configured === "string" ? configured : runtimeAuthor;
+  if (author === void 0) {
+    validationError(
+      "missing_linkedin_author",
+      "$.destinations.linkedin.author",
+      "must be configured directly or supplied through LINKEDIN_AUTHOR"
+    );
+  }
+  return author;
+}
+function parseLinkedIn(value, runtimeAuthor) {
+  const record = assertRecord(value, "$.destinations.linkedin");
+  assertExactKeys(record, ["author", "apiVersion", "text"], "$.destinations.linkedin");
+  const author = resolveLinkedInAuthor(record.author, runtimeAuthor);
   const apiVersion = parseApiVersion(record.apiVersion);
   const text = parseTextVariant(record.text, "$.destinations.linkedin.text");
-  return text === void 0 ? { author: record.author, apiVersion } : { author: record.author, apiVersion, text };
+  return text === void 0 ? { author, apiVersion } : { author, apiVersion, text };
 }
-function parseReleaseSocialConfig(input2) {
+function parseReleaseSocialConfig(input2, identities = {}) {
   const root = assertRecord(input2, "$");
   assertExactKeys(root, ["version", "content", "destinations"], "$");
   if (root.version !== 1) {
@@ -7371,8 +7417,8 @@ function parseReleaseSocialConfig(input2) {
     validationError("empty_destinations", "$.destinations", "must configure x and/or linkedin");
   }
   const parsed = {};
-  if ("x" in destinations) parsed.x = parseX(destinations.x);
-  if ("linkedin" in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin);
+  if ("x" in destinations) parsed.x = parseX(destinations.x, identities.xAccountId);
+  if ("linkedin" in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin, identities.linkedinAuthor);
   const content = root.content === void 0 ? void 0 : parseContent(root.content);
   return content === void 0 ? { version: 1, destinations: parsed } : { version: 1, content, destinations: parsed };
 }
@@ -8045,8 +8091,8 @@ ${source.releaseUrl}`;
   };
   return { ...planWithoutDigest, digest: digestFor(planWithoutDigest) };
 }
-function createReleasePlan(sourceInput, configInput) {
-  const config = parseReleaseSocialConfig(configInput);
+function createReleasePlan(sourceInput, configInput, identities = {}) {
+  const config = parseReleaseSocialConfig(configInput, identities);
   const source = validateCanonicalSource(sourceInput);
   const sourceSkip = getSourceSkipReason(source);
   if (sourceSkip !== void 0) return { status: "skipped", reason: sourceSkip };
@@ -10106,8 +10152,14 @@ function contentSource(plan) {
   if (plan.textSource.kind === "provider_override") return "provider-override";
   return `${plan.textSource.kind.replaceAll("_", "-")}:${plan.textSource.variant}`;
 }
-function prepareRelease(source, config) {
-  const planned = createReleasePlan(source, config);
+function runtimeProviderIdentities(env) {
+  return {
+    ...env.X_ACCOUNT_ID === void 0 ? {} : { xAccountId: env.X_ACCOUNT_ID },
+    ...env.LINKEDIN_AUTHOR === void 0 ? {} : { linkedinAuthor: env.LINKEDIN_AUTHOR }
+  };
+}
+function prepareRelease(source, config, env = {}) {
+  const planned = createReleasePlan(source, config, runtimeProviderIdentities(env));
   if (planned.status === "skipped") {
     return { status: "skipped", skipReason: planned.reason, destinations: [], plans: [] };
   }
@@ -10142,12 +10194,12 @@ function prepareRelease(source, config) {
   return { status: "ready", destinations, plans: planned.plans };
 }
 async function publishPrepared(options) {
-  const prepared = prepareRelease(options.source, options.config);
+  const env = options.env ?? process.env;
+  const prepared = prepareRelease(options.source, options.config, env);
   if (prepared.status === "skipped") return { aggregate: "skipped", prepared };
   if (prepared.destinations.some((destination) => !destination.validation.ok)) {
     return { aggregate: "failed", prepared };
   }
-  const env = options.env ?? process.env;
   const bindings = options.bindings ?? prepared.plans.map((plan) => {
     if (plan.destination === "x") {
       return bindProvider({
@@ -10257,7 +10309,7 @@ async function runAction() {
     const token = input("token", true);
     const config = await readConfig(configPath);
     const source = await new GitHubReleaseReader({ token }).read({ repository, releaseId });
-    const prepared = prepareRelease(source, config);
+    const prepared = prepareRelease(source, config, process.env);
     if (mode === "preview") {
       const result2 = previewValue(prepared);
       await setOutput("result", result2);

@@ -43,9 +43,12 @@ jobs:
           config-path: .github/release-social.json
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          # These secrets are used only when mode=publish. Do not provide them to PR/fork checks.
-          X_API_KEY: ${{ secrets.X_API_KEY }}
-          X_API_SECRET: ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          # Non-secret destination identities can be centralized as repository or organization variables.
+          X_ACCOUNT_ID: ${{ vars.X_ACCOUNT_ID }}
+          LINKEDIN_AUTHOR: ${{ vars.LINKEDIN_AUTHOR }}
+          # Provider credentials are exposed only for explicit publish mode. Never provide them to PR/fork checks.
+          X_API_KEY: ${{ inputs.mode == 'publish' && secrets.X_API_KEY || '' }}
+          X_API_SECRET: ${{ inputs.mode == 'publish' && secrets.X_API_SECRET || '' }}
+          X_ACCESS_TOKEN: ${{ inputs.mode == 'publish' && secrets.X_ACCESS_TOKEN || '' }}
+          X_ACCESS_TOKEN_SECRET: ${{ inputs.mode == 'publish' && secrets.X_ACCESS_TOKEN_SECRET || '' }}
+          LINKEDIN_ACCESS_TOKEN: ${{ inputs.mode == 'publish' && secrets.LINKEDIN_ACCESS_TOKEN || '' }}

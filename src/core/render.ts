@@ -14,6 +14,7 @@ import {
   type ReleasePlanResult,
   type ReleaseSocialConfig,
   type RenderedDestinationPlan,
+  type RuntimeProviderIdentities,
   type TextSource,
   type TextVariant,
   type XAccountIdentity,
@@ -165,8 +166,12 @@ function renderDestination(
   return { ...planWithoutDigest, digest: digestFor(planWithoutDigest) };
 }
 
-export function createReleasePlan(sourceInput: unknown, configInput: unknown): ReleasePlanResult {
-  const config = parseReleaseSocialConfig(configInput);
+export function createReleasePlan(
+  sourceInput: unknown,
+  configInput: unknown,
+  identities: RuntimeProviderIdentities = {},
+): ReleasePlanResult {
+  const config = parseReleaseSocialConfig(configInput, identities);
   const source = validateCanonicalSource(sourceInput);
   const sourceSkip = getSourceSkipReason(source);
   if (sourceSkip !== undefined) return { status: 'skipped', reason: sourceSkip };

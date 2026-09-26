@@ -33,7 +33,9 @@ The consumer supplies exactly one credential:
 LINKEDIN_ACCESS_TOKEN
 ```
 
-The token must authorize the configured personal profile and include `w_member_social`. LinkedIn's self-service **Share on LinkedIn** product grants `w_member_social` for posting on behalf of the authenticated member. The release-social configuration continues to supply:
+The token must authorize the configured personal profile and include `w_member_social`. LinkedIn's self-service **Share on LinkedIn** product grants `w_member_social` for posting on behalf of the authenticated member.
+
+The personal-profile identity can be supplied literally in configuration:
 
 ```json
 {
@@ -46,6 +48,8 @@ The token must authorize the configured personal profile and include `w_member_s
   }
 }
 ```
+
+or centralized as the non-secret runtime variable `LINKEDIN_AUTHOR`, allowing checked-in destination configuration to contain only `apiVersion`. If both sources are present, they must match exactly. The resolved author remains part of the canonical plan and digest.
 
 Use a LinkedIn API version that is currently supported when the consumer runs. Version support changes over time; this package validates the `YYYYMM` shape offline, while LinkedIn remains authoritative for whether a specific version is still accepted.
 

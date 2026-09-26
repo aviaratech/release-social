@@ -155,6 +155,93 @@ describe('configuration contract', () => {
       'invalid_x_account_id',
     );
   });
+
+  it('resolves non-secret runtime identities and rejects missing, malformed, or conflicting values', () => {
+    expect(
+      parseReleaseSocialConfig(
+        {
+          version: 1,
+          destinations: {
+            x: {},
+            linkedin: { apiVersion: '202609' },
+          },
+        },
+        {
+          xAccountId: '123456789012345678',
+          linkedinAuthor: 'urn:li:person:FictionalPerson123',
+        },
+      ),
+    ).toEqual(bothDestinations());
+
+    expect(
+      parseReleaseSocialConfig(
+        {
+          version: 1,
+          destinations: {
+            x: { accountId: '123456789012345678' },
+            linkedin: {
+              author: 'urn:li:person:FictionalPerson123',
+              apiVersion: '202609',
+            },
+          },
+        },
+        {
+          xAccountId: '123456789012345678',
+          linkedinAuthor: 'urn:li:person:FictionalPerson123',
+        },
+      ),
+    ).toEqual(bothDestinations());
+
+    expectCode(() => parseReleaseSocialConfig({ version: 1, destinations: { x: {} } }), 'missing_x_account_id');
+    expectCode(
+      () => parseReleaseSocialConfig({ version: 1, destinations: { linkedin: { apiVersion: '202609' } } }, {}),
+      'missing_linkedin_author',
+    );
+    expectCode(
+      () => parseReleaseSocialConfig({ version: 1, destinations: { x: {} } }, { xAccountId: 'not-numeric' }),
+      'invalid_x_account_id',
+    );
+    expectCode(
+      () =>
+        parseReleaseSocialConfig(
+          {
+            version: 1,
+            destinations: { x: { accountId: '123456789012345678' } },
+          },
+          { xAccountId: '987654321' },
+        ),
+      'conflicting_x_account_id',
+    );
+    expectCode(
+      () =>
+        parseReleaseSocialConfig(
+          {
+            version: 1,
+            destinations: {
+              linkedin: {
+                author: 'urn:li:person:FictionalPerson123',
+                apiVersion: '202609',
+              },
+            },
+          },
+          { linkedinAuthor: 'urn:li:person:FictionalPerson987' },
+        ),
+      'conflicting_linkedin_author',
+    );
+
+    expect(
+      parseReleaseSocialConfig(
+        {
+          version: 1,
+          destinations: { x: { accountId: '123456789012345678' } },
+        },
+        { linkedinAuthor: 'not-a-linkedin-urn' },
+      ),
+    ).toEqual({
+      version: 1,
+      destinations: { x: { accountId: '123456789012345678' } },
+    });
+  });
 });
 
 describe('source eligibility and rendering', () => {
@@ -281,6 +368,26 @@ describe('source eligibility and rendering', () => {
       status: 'skipped',
       reason: 'source_not_public',
     });
+  });
+
+  it('produces identical plans when the same identities come from runtime configuration', () => {
+    const literal = createReleasePlan(source(), bothDestinations());
+    const runtime = createReleasePlan(
+      source(),
+      {
+        version: 1,
+        destinations: {
+          x: {},
+          linkedin: { apiVersion: '202609' },
+        },
+      },
+      {
+        xAccountId: '123456789012345678',
+        linkedinAuthor: 'urn:li:person:FictionalPerson123',
+      },
+    );
+
+    expect(runtime).toEqual(literal);
   });
 
   it('produces deterministic bytes and per-destination digests independent of other destinations', () => {
