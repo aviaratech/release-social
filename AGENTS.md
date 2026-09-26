@@ -9,7 +9,7 @@ These instructions govern work in `aviaratech/release-social`. They describe rep
 - Never add real social credentials, tokens, private release data, or live account identifiers to code, fixtures, examples, logs, or documentation.
 - Do not make live social posts or paid provider requests during development or CI.
 - Do not add provider HTTP code, durable state, CLI behavior, or GitHub Action execution unless the active issue explicitly owns that surface.
-- Preserve the v1 release-note and configuration contracts unless an issue explicitly versions or changes them.
+- Preserve the v1 release-note and configuration contracts unless an issue explicitly versions or changes them. The backward-compatible v1 `content.missingAuthored` extension defaults to deterministic GitHub Release-note fallback; malformed or partial authored markers remain errors and must never silently fall back.
 
 ## Required verification
 

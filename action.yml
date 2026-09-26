@@ -1,0 +1,31 @@
+name: release-social
+description: Preview or publish validated GitHub release announcements to configured social destinations.
+author: Aviara Tech
+
+inputs:
+  mode:
+    description: preview (default) or publish
+    required: false
+    default: preview
+  repository:
+    description: Source repository in owner/name form
+    required: true
+  release-id:
+    description: Numeric GitHub release ID
+    required: true
+  config-path:
+    description: Repository-relative path to trusted release-social JSON configuration
+    required: true
+  token:
+    description: GitHub token used to read the release and, in publish mode, write release-social-state
+    required: true
+
+outputs:
+  aggregate:
+    description: success, skipped, partial, unknown, or failed
+  result:
+    description: Bounded JSON result with per-destination preview/publication status
+
+runs:
+  using: node24
+  main: action-dist/index.cjs

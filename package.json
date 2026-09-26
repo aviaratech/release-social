@@ -11,10 +11,16 @@
     "type": "git",
     "url": "git+https://github.com/aviaratech/release-social.git"
   },
+  "bin": {
+    "release-social": "./dist/cli/bin.js"
+  },
   "files": [
     "dist",
+    "action-dist",
+    "action.yml",
     "templates",
     "docs",
+    "examples",
     "README.md",
     "CONTRIBUTING.md",
     "LICENSE"
@@ -46,7 +52,9 @@
     "typecheck": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
-    "checks": "npm run format:check && npm run lint && npm run typecheck && npm test"
+    "checks": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run check:action-bundle",
+    "bundle:action": "node scripts/build-action.mjs",
+    "check:action-bundle": "node scripts/check-action-bundle.mjs"
   },
   "dependencies": {
     "oauth": "0.10.2",
@@ -56,6 +64,7 @@
     "@types/node": "^25.9.1",
     "@types/oauth": "0.9.6",
     "@types/twitter-text": "3.1.10",
+    "esbuild": "0.28.2",
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2003",
