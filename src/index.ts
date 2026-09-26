@@ -36,6 +36,7 @@ export type {
   ReleaseSocialConfig,
   ReleaseSocialProvider,
   RenderedDestinationPlan,
+  RuntimeProviderIdentities,
   SkipReason,
   SourceVisibility,
   TextSource,
