@@ -276,10 +276,10 @@ See publishing-state.md for recovery details.
 
 ## 9. GitHub Action
 
-Use the bundled Action after the consumer's package/release job succeeds. Pin to an immutable full commit SHA.
+Use the bundled Action after the consumer's package/release job succeeds. Use `aviaratech/release-social@v1` for the latest backwards-compatible v1 release, `@v1.0.0` for the exact immutable release, or the full 40-character release commit SHA for maximum pinning assurance.
 
 ~~~yaml
-- uses: aviaratech/release-social@REPLACE_WITH_FULL_40_CHAR_COMMIT_SHA
+- uses: aviaratech/release-social@v1
   with:
     mode: preview
     repository: OWNER/REPOSITORY

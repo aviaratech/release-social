@@ -1,7 +1,7 @@
 {
   "name": "@aviaratech/release-social",
-  "version": "0.1.0",
-  "description": "Deterministic release-announcement contracts and planning for social publishing",
+  "version": "1.0.0",
+  "description": "Publish GitHub Releases to X and LinkedIn with preview-first, duplicate-resistant delivery",
   "homepage": "https://github.com/aviaratech/release-social#readme",
   "bugs": {
     "url": "https://github.com/aviaratech/release-social/issues"
@@ -23,6 +23,7 @@
     "examples",
     "README.md",
     "CONTRIBUTING.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "type": "module",
