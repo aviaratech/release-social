@@ -71,7 +71,11 @@ function resolveXAccountId(configured: unknown, runtime: string | undefined): st
 
   const runtimeAccountId = normalizeRuntimeIdentity(runtime);
   if (runtimeAccountId !== undefined && !/^\d+$/.test(runtimeAccountId)) {
-    validationError('invalid_x_account_id', '$.runtime.X_ACCOUNT_ID', 'must be a numeric user ID encoded as a string');
+    validationError(
+      'invalid_x_account_id',
+      '$.runtime.X_ACCOUNT_ID',
+      'must be a numeric user ID encoded as a string',
+    );
   }
 
   if (typeof configured === 'string' && runtimeAccountId !== undefined && configured !== runtimeAccountId) {
@@ -159,7 +163,8 @@ export function parseReleaseSocialConfig(
   input: unknown,
   identities: RuntimeProviderIdentities = {},
 ): ReleaseSocialConfig {
-  const root = assertRecord(input, '  assertExactKeys(root, ['version', 'content', 'destinations'], '$');
+  const root = assertRecord(input, '$');
+  assertExactKeys(root, ['version', 'content', 'destinations'], '$');
 
   if (root.version !== 1) {
     validationError('unsupported_config_version', '$.version', 'must be 1');
@@ -175,27 +180,6 @@ export function parseReleaseSocialConfig(
   const parsed: ReleaseSocialConfig['destinations'] = {};
   if ('x' in destinations) parsed.x = parseX(destinations.x, identities.xAccountId);
   if ('linkedin' in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin, identities.linkedinAuthor);
-
-  const content = root.content === undefined ? undefined : parseContent(root.content);
-  return content === undefined ? { version: 1, destinations: parsed } : { version: 1, content, destinations: parsed };
-}
-);
-  assertExactKeys(root, ['version', 'content', 'destinations'], '$');
-
-  if (root.version !== 1) {
-    validationError('unsupported_config_version', '$.version', 'must be 1');
-  }
-
-  const destinations = assertRecord(root.destinations, '$.destinations');
-  assertExactKeys(destinations, ['x', 'linkedin'], '$.destinations');
-
-  if (Object.keys(destinations).length === 0) {
-    validationError('empty_destinations', '$.destinations', 'must configure x and/or linkedin');
-  }
-
-  const parsed: ReleaseSocialConfig['destinations'] = {};
-  if ('x' in destinations) parsed.x = parseX(destinations.x);
-  if ('linkedin' in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin);
 
   const content = root.content === undefined ? undefined : parseContent(root.content);
   return content === undefined ? { version: 1, destinations: parsed } : { version: 1, content, destinations: parsed };
