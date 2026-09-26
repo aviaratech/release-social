@@ -31,4 +31,6 @@ jobs:
           npm test -- --run tests/providers/x.test.ts
           npm test -- --run tests/providers/linkedin.test.ts
           npm test -- --run tests/publishing tests/github/state-store.test.ts
+          npm test -- --run tests/entrypoints
+          npm run check:action-bundle
           npm pack --dry-run

@@ -1,4 +1,6 @@
-import { parseTweet } from 'twitter-text';
+import twitterText from 'twitter-text';
+
+const { parseTweet } = twitterText;
 
 export const X_MAX_WEIGHTED_LENGTH = 280;
 export const LINKEDIN_COMMENTARY_MAX_CHARACTERS = 3000;

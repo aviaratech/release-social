@@ -1,0 +1,46 @@
+name: Package release and social announcement
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.release.outputs.release_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: release
+        run: |
+          echo "This fixture represents the consumer's successful package/release job."
+          echo "release_id=12345678" >> "$GITHUB_OUTPUT"
+
+  social:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    concurrency:
+      group: release-social-${{ github.repository_id }}-${{ needs.release.outputs.release_id }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: aviaratech/release-social@REPLACE_WITH_FULL_40_CHAR_COMMIT_SHA
+        with:
+          mode: publish
+          repository: ${{ github.repository }}
+          release-id: ${{ needs.release.outputs.release_id }}
+          config-path: .github/release-social.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
