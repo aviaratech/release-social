@@ -37,6 +37,8 @@ X_ACCESS_TOKEN_SECRET
 
 Do not put these values in release notes, release-social configuration, rendered plans, repository files, CI logs, or receipts. App-only bearer tokens are not a publishing fallback for this provider.
 
+The expected publishing account ID is non-secret configuration. Consumers may either keep `accountId` in the destination config or supply the numeric ID through `X_ACCOUNT_ID`. If both are present, they must match exactly. Centralizing `X_ACCOUNT_ID` as a repository or organization variable avoids duplicating one account ID across many consumer repositories.
+
 ## Runtime behavior
 
 Preparation and validation are offline. They do not load credentials or contact X.
