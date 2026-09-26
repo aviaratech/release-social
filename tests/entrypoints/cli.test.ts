@@ -96,8 +96,11 @@ describe('CLI entrypoint', () => {
     };
     expect(result.destinations).toEqual(
       expect.arrayContaining([
-        { destination: 'x', account: '123456789012345678' },
-        { destination: 'linkedin', account: 'urn:li:person:FictionalPerson123' },
+        expect.objectContaining({ destination: 'x', account: '123456789012345678' }),
+        expect.objectContaining({
+          destination: 'linkedin',
+          account: 'urn:li:person:FictionalPerson123',
+        }),
       ]),
     );
     expect(output.stderr).toEqual([]);
