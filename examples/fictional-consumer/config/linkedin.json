@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "content": {
+    "missingAuthored": "github-release-notes"
+  },
+  "destinations": {
+    "linkedin": {
+      "author": "urn:li:person:FictionalMember123",
+      "apiVersion": "202609"
+    }
+  }
+}

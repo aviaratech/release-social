@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "content": {
+    "missingAuthored": "error"
+  },
+  "destinations": {
+    "x": {
+      "accountId": "123456789012345678"
+    }
+  }
+}

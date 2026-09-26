@@ -1,18 +1,18 @@
 <!-- release-social:v1 -->
 
 <!-- announcement:start -->
-Describe the release for a broad technical audience in one plain-text paragraph.
+Lead with the concrete benefit delivered by this release in one plain-text paragraph, then state the most important shipped capability without unsupported claims.
 <!-- announcement:end -->
 
 ## Highlights
 
-- Describe the most important shipped behavior and technical details.
-- Keep enough detail for the GitHub release to stand on its own.
+- Describe the most important shipped behavior and concrete technical details.
+- Preserve meaningful limitations, compatibility constraints, and evidence from the actual release.
 
 ## Upgrade notes
 
 No breaking changes.
 
 <!-- social:short
-Write the concise plain-text announcement used by X by default.
+Write concise plain-text copy suitable for X. Keep only claims supported by the release evidence.
 -->

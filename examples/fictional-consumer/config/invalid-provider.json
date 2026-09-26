@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "destinations": {
+    "threads": {
+      "account": "FictionalOnly"
+    }
+  }
+}
