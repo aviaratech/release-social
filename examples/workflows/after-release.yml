@@ -39,6 +39,8 @@ jobs:
           config-path: .github/release-social.json
           token: ${{ secrets.GITHUB_TOKEN }}
         env:
+          X_ACCOUNT_ID: ${{ vars.X_ACCOUNT_ID }}
+          LINKEDIN_AUTHOR: ${{ vars.LINKEDIN_AUTHOR }}
           X_API_KEY: ${{ secrets.X_API_KEY }}
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
