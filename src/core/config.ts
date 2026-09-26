@@ -4,6 +4,7 @@ import type {
   MissingAuthoredMode,
   ReleaseContentConfig,
   ReleaseSocialConfig,
+  RuntimeProviderIdentities,
   TextVariant,
   XDestinationConfig,
 } from './types.js';
@@ -54,11 +55,13 @@ function parseContent(value: unknown): ReleaseContentConfig {
   return missingAuthored === undefined ? {} : { missingAuthored };
 }
 
-function parseX(value: unknown): XDestinationConfig {
-  const record = assertRecord(value, '$.destinations.x');
-  assertExactKeys(record, ['accountId', 'text'], '$.destinations.x');
+function normalizeRuntimeIdentity(value: string | undefined): string | undefined {
+  const normalized = value?.trim();
+  return normalized === '' ? undefined : normalized;
+}
 
-  if (typeof record.accountId !== 'string' || !/^\d+$/.test(record.accountId)) {
+function resolveXAccountId(configured: unknown, runtime: string | undefined): string {
+  if (configured !== undefined && (typeof configured !== 'string' || !/^\d+$/.test(configured))) {
     validationError(
       'invalid_x_account_id',
       '$.destinations.x.accountId',
@@ -66,8 +69,37 @@ function parseX(value: unknown): XDestinationConfig {
     );
   }
 
+  const runtimeAccountId = normalizeRuntimeIdentity(runtime);
+  if (runtimeAccountId !== undefined && !/^\d+$/.test(runtimeAccountId)) {
+    validationError('invalid_x_account_id', '$.runtime.X_ACCOUNT_ID', 'must be a numeric user ID encoded as a string');
+  }
+
+  if (typeof configured === 'string' && runtimeAccountId !== undefined && configured !== runtimeAccountId) {
+    validationError(
+      'conflicting_x_account_id',
+      '$.destinations.x.accountId',
+      'does not match runtime X_ACCOUNT_ID',
+    );
+  }
+
+  const accountId = typeof configured === 'string' ? configured : runtimeAccountId;
+  if (accountId === undefined) {
+    validationError(
+      'missing_x_account_id',
+      '$.destinations.x.accountId',
+      'must be configured directly or supplied through X_ACCOUNT_ID',
+    );
+  }
+  return accountId;
+}
+
+function parseX(value: unknown, runtimeAccountId?: string): XDestinationConfig {
+  const record = assertRecord(value, '$.destinations.x');
+  assertExactKeys(record, ['accountId', 'text'], '$.destinations.x');
+
+  const accountId = resolveXAccountId(record.accountId, runtimeAccountId);
   const text = parseTextVariant(record.text, '$.destinations.x.text');
-  return text === undefined ? { accountId: record.accountId } : { accountId: record.accountId, text };
+  return text === undefined ? { accountId } : { accountId, text };
 }
 
 function parseApiVersion(value: unknown): string {
@@ -81,21 +113,73 @@ function parseApiVersion(value: unknown): string {
   return value;
 }
 
-function parseLinkedIn(value: unknown): LinkedInDestinationConfig {
-  const record = assertRecord(value, '$.destinations.linkedin');
-  assertExactKeys(record, ['author', 'apiVersion', 'text'], '$.destinations.linkedin');
-
-  if (typeof record.author !== 'string' || !/^urn:li:person:[^\s:]+$/.test(record.author)) {
+function resolveLinkedInAuthor(configured: unknown, runtime: string | undefined): string {
+  if (
+    configured !== undefined &&
+    (typeof configured !== 'string' || !/^urn:li:person:[^\s:]+$/.test(configured))
+  ) {
     validationError('invalid_linkedin_author', '$.destinations.linkedin.author', 'must match urn:li:person:...');
   }
 
-  const apiVersion = parseApiVersion(record.apiVersion);
-  const text = parseTextVariant(record.text, '$.destinations.linkedin.text');
-  return text === undefined ? { author: record.author, apiVersion } : { author: record.author, apiVersion, text };
+  const runtimeAuthor = normalizeRuntimeIdentity(runtime);
+  if (runtimeAuthor !== undefined && !/^urn:li:person:[^\s:]+$/.test(runtimeAuthor)) {
+    validationError('invalid_linkedin_author', '$.runtime.LINKEDIN_AUTHOR', 'must match urn:li:person:...');
+  }
+
+  if (typeof configured === 'string' && runtimeAuthor !== undefined && configured !== runtimeAuthor) {
+    validationError(
+      'conflicting_linkedin_author',
+      '$.destinations.linkedin.author',
+      'does not match runtime LINKEDIN_AUTHOR',
+    );
+  }
+
+  const author = typeof configured === 'string' ? configured : runtimeAuthor;
+  if (author === undefined) {
+    validationError(
+      'missing_linkedin_author',
+      '$.destinations.linkedin.author',
+      'must be configured directly or supplied through LINKEDIN_AUTHOR',
+    );
+  }
+  return author;
 }
 
-export function parseReleaseSocialConfig(input: unknown): ReleaseSocialConfig {
-  const root = assertRecord(input, '$');
+function parseLinkedIn(value: unknown, runtimeAuthor?: string): LinkedInDestinationConfig {
+  const record = assertRecord(value, '$.destinations.linkedin');
+  assertExactKeys(record, ['author', 'apiVersion', 'text'], '$.destinations.linkedin');
+
+  const author = resolveLinkedInAuthor(record.author, runtimeAuthor);
+  const apiVersion = parseApiVersion(record.apiVersion);
+  const text = parseTextVariant(record.text, '$.destinations.linkedin.text');
+  return text === undefined ? { author, apiVersion } : { author, apiVersion, text };
+}
+
+export function parseReleaseSocialConfig(
+  input: unknown,
+  identities: RuntimeProviderIdentities = {},
+): ReleaseSocialConfig {
+  const root = assertRecord(input, '  assertExactKeys(root, ['version', 'content', 'destinations'], '$');
+
+  if (root.version !== 1) {
+    validationError('unsupported_config_version', '$.version', 'must be 1');
+  }
+
+  const destinations = assertRecord(root.destinations, '$.destinations');
+  assertExactKeys(destinations, ['x', 'linkedin'], '$.destinations');
+
+  if (Object.keys(destinations).length === 0) {
+    validationError('empty_destinations', '$.destinations', 'must configure x and/or linkedin');
+  }
+
+  const parsed: ReleaseSocialConfig['destinations'] = {};
+  if ('x' in destinations) parsed.x = parseX(destinations.x, identities.xAccountId);
+  if ('linkedin' in destinations) parsed.linkedin = parseLinkedIn(destinations.linkedin, identities.linkedinAuthor);
+
+  const content = root.content === undefined ? undefined : parseContent(root.content);
+  return content === undefined ? { version: 1, destinations: parsed } : { version: 1, content, destinations: parsed };
+}
+);
   assertExactKeys(root, ['version', 'content', 'destinations'], '$');
 
   if (root.version !== 1) {
