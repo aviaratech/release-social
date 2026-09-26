@@ -38,7 +38,7 @@ The canonical release event is the GitHub Release tagged `v1.0.0`. The standalon
 
 - [ ] README leads with “Publish GitHub Releases to X and LinkedIn—safely.”
 - [ ] README recommends `aviaratech/release-social@v1` for normal consumers.
-- [ ] README documents full-SHA pinning for highest assurance.
+- [ ] README documents pinning the full 40-character commit SHA for highest assurance.
 - [ ] README contains a copyable minimal workflow.
 - [ ] X-only, LinkedIn-only, and both-destination setup remain documented.
 - [ ] Preview-first behavior is obvious.
