@@ -141,7 +141,7 @@ async function loadPrepared(args: ParsedArgs, io: CliIo, services: CliServices) 
     repository,
     releaseId,
   });
-  return { repository, source, config, prepared: prepareRelease(source, config) };
+  return { repository, source, config, prepared: prepareRelease(source, config, io.env) };
 }
 
 const HELP = `release-social commands:
