@@ -47,8 +47,6 @@ const EXPECTED_X_TEXT = `Fictional release is ready.\n\n${RELEASE_URL}`;
 const EXPECTED_LINKEDIN_TEXT = `Fictional \\#1 release \\(stable\\).\n\n${RELEASE_URL}`;
 
 type Selection = 'x' | 'linkedin' | 'both';
-type Target = 'cli' | 'action';
-
 interface Control {
   release: {
     repository: string;
@@ -113,7 +111,7 @@ interface Sandbox {
   outputPath: string;
 }
 
-const PRELOAD = resolve('tests/acceptance/mock-runtime.mjs');
+const PRELOAD = resolve('test-fixtures/acceptance/mock-runtime.mjs');
 const BUILT_CLI = resolve('dist/cli/bin.js');
 const ACTION_BUNDLE = resolve('action-dist/index.cjs');
 
