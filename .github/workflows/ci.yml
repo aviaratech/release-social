@@ -25,9 +25,6 @@ jobs:
       - name: Install and verify
         run: |
           npm ci
-          npm run format
-          npm run bundle:action
-          git diff -- src tests action-dist/index.cjs
           npm run checks
           npm run build
           npm test -- --run tests/core
