@@ -32,7 +32,7 @@ The consumer supplies exactly one credential:
 LINKEDIN_ACCESS_TOKEN
 ```
 
-The token must authorize the configured personal profile and include `w_member_social`. The release-social configuration continues to supply:
+The token must authorize the configured personal profile and include `w_member_social`. LinkedIn's self-service **Share on LinkedIn** product grants `w_member_social` for posting on behalf of the authenticated member. The release-social configuration continues to supply:
 
 ```json
 {
