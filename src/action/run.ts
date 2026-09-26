@@ -89,7 +89,7 @@ export async function runAction(): Promise<number> {
     const token = input('token', true);
     const config = await readConfig(configPath);
     const source = await new GitHubReleaseReader({ token }).read({ repository, releaseId });
-    const prepared = prepareRelease(source, config);
+    const prepared = prepareRelease(source, config, process.env);
 
     if (mode === 'preview') {
       const result = previewValue(prepared);
