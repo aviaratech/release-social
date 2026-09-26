@@ -192,24 +192,13 @@ describe('configuration contract', () => {
       ),
     ).toEqual(bothDestinations());
 
+    expectCode(() => parseReleaseSocialConfig({ version: 1, destinations: { x: {} } }), 'missing_x_account_id');
     expectCode(
-      () => parseReleaseSocialConfig({ version: 1, destinations: { x: {} } }),
-      'missing_x_account_id',
-    );
-    expectCode(
-      () =>
-        parseReleaseSocialConfig(
-          { version: 1, destinations: { linkedin: { apiVersion: '202609' } } },
-          {},
-        ),
+      () => parseReleaseSocialConfig({ version: 1, destinations: { linkedin: { apiVersion: '202609' } } }, {}),
       'missing_linkedin_author',
     );
     expectCode(
-      () =>
-        parseReleaseSocialConfig(
-          { version: 1, destinations: { x: {} } },
-          { xAccountId: 'not-numeric' },
-        ),
+      () => parseReleaseSocialConfig({ version: 1, destinations: { x: {} } }, { xAccountId: 'not-numeric' }),
       'invalid_x_account_id',
     );
     expectCode(
